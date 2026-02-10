@@ -23,6 +23,14 @@ A minimal RAG (Retrieval-Augmented Generation) chatbot experiment using 2 resear
    ```
 
 4. **Ask questions:**
+
+   **Option A: Web Interface (Recommended)**
+   ```bash
+   python src/app.py
+   ```
+   Then open http://localhost:5000 in your browser
+
+   **Option B: Command Line**
    ```bash
    python src/query.py
    ```
@@ -33,7 +41,13 @@ A minimal RAG (Retrieval-Augmented Generation) chatbot experiment using 2 resear
 knowledge_base/experimental_pdfs_nahom/  # Research PDFs
 src/                                      # Source code
   ├── ingest.py                          # PDF → Chroma pipeline
-  └── query.py                           # Q&A interface
+  ├── query.py                           # CLI Q&A interface
+  ├── app.py                             # Web application
+  ├── templates/                         # HTML templates
+  │   └── index.html                     # Chat interface
+  └── static/                            # CSS & JavaScript
+      ├── style.css                      # Styling
+      └── script.js                      # Frontend logic
 requirements.txt                          # Python dependencies
 .env                                      # API keys (not committed)
 ```
