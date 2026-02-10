@@ -23,7 +23,7 @@ load_dotenv()
 # Configuration
 CHROMA_DB_DIR = "chroma_db"
 MODEL_NAME = "gpt-3.5-turbo"  # Fast and cheap for learning
-NUM_RELEVANT_CHUNKS = 4  # How many chunks to retrieve
+NUM_RELEVANT_CHUNKS = 6  # How many chunks to retrieve (increased for better coverage)
 
 
 def load_vector_store():
@@ -58,19 +58,24 @@ def create_qa_chain(vectorstore):
         temperature=0,  # 0 = deterministic, factual answers
     )
 
-    # Create a custom prompt template
-    prompt_template = """You are a helpful assistant answering questions about AI-generated music detection research.
+    # Create a custom prompt template with STRICT grounding rules
+    prompt_template = """You are a careful research assistant. Your ONLY job is to extract and summarize information from the provided context.
 
-Use the following pieces of context from research papers to answer the question at the end.
-If you don't know the answer based on the context, just say "I don't have enough information in the provided documents to answer that question."
-Don't make up information that isn't in the context.
+STRICT GROUNDING RULES (DO NOT VIOLATE):
+1. Answer ONLY from the retrieved context below - do NOT add facts not present in it
+2. Every claim in your answer MUST be traceable to a specific chunk below
+3. If the context is insufficient or doesn't contain the answer → say "The provided context does not contain enough information to answer this question."
+4. Do NOT infer, extrapolate, or fill gaps with general knowledge
+5. For lists (models, methods, etc.) → ONLY list what is explicitly named in the context
+6. If the question is broad but context is limited → acknowledge the limitation: "Based on the provided context, the following [X] are mentioned..."
+7. Your answer should read like a summary of the chunks below, NOT like an essay
 
-Context:
+Retrieved Context:
 {context}
 
 Question: {question}
 
-Answer:"""
+Answer (extract/summarize ONLY from context above):"""
 
     PROMPT = PromptTemplate(
         template=prompt_template,
@@ -103,14 +108,22 @@ def ask_question(qa_chain, question):
     answer = result["result"]
     source_docs = result["source_documents"]
 
-    print(f"\n💡 Answer:\n{answer}")
-
-    # Show which chunks were used
-    print(f"\n📚 Sources used ({len(source_docs)} chunks):")
+    # Show retrieved chunks FIRST (for transparency and debugging)
+    print(f"\n📚 Retrieved Context ({len(source_docs)} chunks):")
+    print("-" * 60)
     for i, doc in enumerate(source_docs, 1):
         source = doc.metadata.get("source", "Unknown")
         page = doc.metadata.get("page", "?")
-        print(f"  {i}. {os.path.basename(source)} (page {page + 1})")
+        # Show first 200 chars of the chunk
+        snippet = doc.page_content[:200].replace("\n", " ")
+        if len(doc.page_content) > 200:
+            snippet += "..."
+
+        print(f"\n[{i}] {os.path.basename(source)} (page {page + 1})")
+        print(f"    \"{snippet}\"")
+
+    print("\n" + "-" * 60)
+    print(f"\n💡 Answer:\n{answer}")
 
     return answer
 
