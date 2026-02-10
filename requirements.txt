@@ -1,0 +1,14 @@
+# Core RAG dependencies
+langchain==0.1.0
+langchain-openai==0.0.2
+chromadb==0.4.22
+
+# PDF processing
+pypdf==3.17.4
+
+# Environment management
+python-dotenv==1.0.0
+
+# Additional utilities
+tiktoken==0.5.2
+

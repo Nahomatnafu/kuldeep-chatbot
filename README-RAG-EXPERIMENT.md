@@ -1,6 +1,6 @@
 # RAG Experiment - Learning Branch
 
-**Branch:** `rag-experiment-kuldeep`
+**Branch:** `rag-experiment-nahom`
 
 **Purpose:** Experimental branch for learning RAG (Retrieval-Augmented Generation) systems while waiting for client's manufacturing knowledge base.
 
@@ -8,16 +8,19 @@
 
 ## Scope (IMPORTANT - No Scope Creep!)
 
+This branch experiments with a simple RAG chatbot over two research PDFs.
+
 ### ✅ What This IS:
 - **Input:** 2 PDF research articles (provided)
-- **Output:** Text-based answers only
+- **Output:** Text-based Q&A only
+- **Execution:** Local execution
 - **Goal:** Learn RAG fundamentals with minimal implementation
 
 ### ❌ What This is NOT:
 - ❌ No UI polish
 - ❌ No authentication
 - ❌ No memory beyond one question (no conversation history)
-- ❌ No multi-document retrieval
+- ❌ No fine-tuning
 - ❌ No production-ready features
 - ❌ No deployment considerations
 
@@ -43,12 +46,26 @@
 
 ---
 
-## PDFs
+## PDFs Used
 
-*To be added when provided*
+Located in: `knowledge_base/experimental_pdfs_nahom/`
 
-1. [PDF 1 - Name TBD]
-2. [PDF 2 - Name TBD]
+1. **AI-Generated Music Detection and Its Challenges**
+   - File: `ai_generated_music_detection_and_its_challenges.pdf`
+
+2. **AI-Generated Music Detection in Broadcast Monitoring**
+   - File: `ai_generated_music_detection_in_brodcast_monitoring.pdf`
+
+## Tech Stack
+
+Keeping it simple and focused for learning:
+
+- **Language:** Python
+- **RAG Framework:** LangChain (simpler mental model for RAG)
+- **Vector Store:** Chroma (dead simple, persistent, no server needed)
+- **Embeddings:** OpenAI embeddings
+- **LLM:** OpenAI chat model
+- **Interface:** CLI or minimal script
 
 ---
 
