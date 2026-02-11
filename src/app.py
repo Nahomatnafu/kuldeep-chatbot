@@ -1,169 +1,266 @@
 """
-Flask Web Application for RAG Chatbot
+Flask Web Application for PDF Chatbot
 
-Simple web interface for the AI music detection Q&A system.
+Simple web UI for uploading PDFs and asking questions.
 """
 
 import os
 from flask import Flask, render_template, request, jsonify
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Load environment variables
 load_dotenv()
 
-# Configuration
-CHROMA_DB_DIR = "chroma_db"
-MODEL_NAME = "gpt-3.5-turbo"
-NUM_RELEVANT_CHUNKS = 6
-
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'data/pdfs'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
 
-# Global variables for the QA chain (loaded once at startup)
-qa_chain = None
+# Configuration
+CHROMA_DB_DIR = "vector_db"
+MODEL_NAME = "gpt-3.5-turbo"
+NUM_RELEVANT_CHUNKS = 4
+
+# Global variables for chain and vectorstore
+rag_chain = None
+retriever = None
 vectorstore = None
 
 
-def initialize_qa_chain():
-    """Initialize the QA chain at startup."""
-    global qa_chain, vectorstore
-    
-    print("🔧 Initializing QA system...")
-    
-    # Check for API key
-    if not os.getenv("OPENAI_API_KEY"):
-        raise ValueError("OPENAI_API_KEY not found in environment variables.")
+def allowed_file(filename):
+    """Check if file extension is allowed."""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+
+def format_docs(docs):
+    """Format retrieved documents into a single string."""
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
+def initialize_chain():
+    """Initialize or reinitialize the RAG chain."""
+    global rag_chain, retriever, vectorstore
     
     # Check if vector database exists
     if not os.path.exists(CHROMA_DB_DIR):
-        raise FileNotFoundError(
-            f"Vector database not found at {CHROMA_DB_DIR}/. "
-            "Please run 'python src/ingest.py' first."
+        return False, "No documents ingested yet. Please upload a PDF first."
+    
+    try:
+        # Initialize embeddings
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
         )
-    
-    # Load vector store
-    embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
-    vectorstore = Chroma(
-        persist_directory=CHROMA_DB_DIR,
-        embedding_function=embeddings
-    )
-    
-    # Initialize LLM
-    llm = ChatOpenAI(
-        model_name=MODEL_NAME,
-        temperature=0,
-    )
-    
-    # Create prompt template
-    prompt_template = """You are a careful research assistant. Your ONLY job is to extract and summarize information from the provided context.
+        
+        # Load vector store
+        vectorstore = Chroma(
+            persist_directory=CHROMA_DB_DIR,
+            embedding_function=embeddings
+        )
+        
+        # Check for OpenAI API key
+        if not os.getenv("OPENAI_API_KEY"):
+            return False, "OpenAI API key not found. Please set it in .env file."
+        
+        # Initialize LLM
+        llm = ChatOpenAI(
+            model_name=MODEL_NAME,
+            temperature=0,
+        )
+        
+        # Create retriever
+        retriever = vectorstore.as_retriever(
+            search_kwargs={"k": NUM_RELEVANT_CHUNKS}
+        )
+        
+        # Create prompt template
+        prompt = ChatPromptTemplate.from_template(
+            """You are a helpful assistant answering questions based on the provided context.
 
-STRICT GROUNDING RULES (DO NOT VIOLATE):
-1. Answer ONLY from the retrieved context below - do NOT add facts not present in it
-2. Every claim in your answer MUST be traceable to a specific chunk below
-3. If the context is insufficient or doesn't contain the answer → say "The provided context does not contain enough information to answer this question."
-4. Do NOT infer, extrapolate, or fill gaps with general knowledge
-5. For lists (models, methods, etc.) → ONLY list what is explicitly named in the context
-6. If the question is broad but context is limited → acknowledge the limitation: "Based on the provided context, the following [X] are mentioned..."
-7. Your answer should read like a summary of the chunks below, NOT like an essay
+Use ONLY the information from the context below to answer the question.
+If the answer is not in the context, say "I don't have enough information to answer that question."
 
-Retrieved Context:
+Context:
 {context}
 
 Question: {question}
 
-Answer (extract/summarize ONLY from context above):"""
+Answer:""")
+        
+        # Create chain using LCEL
+        rag_chain = (
+            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+        
+        return True, "System ready!"
     
-    PROMPT = PromptTemplate(
-        template=prompt_template,
-        input_variables=["context", "question"]
-    )
+    except Exception as e:
+        return False, f"Error initializing system: {str(e)}"
+
+
+def ingest_pdf(filepath):
+    """Ingest a PDF file into the vector database."""
+    try:
+        # Load PDF
+        loader = PyPDFLoader(filepath)
+        documents = loader.load()
+        
+        # Split into chunks
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            length_function=len,
+        )
+        chunks = text_splitter.split_documents(documents)
+        
+        # Initialize embeddings
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True}
+        )
+        
+        # Create or update vector store
+        if os.path.exists(CHROMA_DB_DIR):
+            # Add to existing database
+            vectorstore = Chroma(
+                persist_directory=CHROMA_DB_DIR,
+                embedding_function=embeddings
+            )
+            vectorstore.add_documents(chunks)
+        else:
+            # Create new database
+            vectorstore = Chroma.from_documents(
+                documents=chunks,
+                embedding=embeddings,
+                persist_directory=CHROMA_DB_DIR
+            )
+        
+        return True, f"Successfully ingested {len(chunks)} chunks from {os.path.basename(filepath)}"
     
-    # Create QA chain
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectorstore.as_retriever(
-            search_kwargs={"k": NUM_RELEVANT_CHUNKS}
-        ),
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": PROMPT}
-    )
-    
-    print("✅ QA system ready!")
+    except Exception as e:
+        return False, f"Error ingesting PDF: {str(e)}"
 
 
 @app.route('/')
 def index():
-    """Serve the main chat interface."""
+    """Render the main page."""
     return render_template('index.html')
 
 
-@app.route('/api/ask', methods=['POST'])
-def ask():
-    """Handle question from the frontend."""
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    """Handle PDF file upload and ingestion."""
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'No file provided'})
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'No file selected'})
+    
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'message': 'Only PDF files are allowed'})
+    
     try:
-        data = request.get_json()
-        question = data.get('question', '').strip()
+        # Save file
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        file.save(filepath)
         
-        if not question:
-            return jsonify({'error': 'Question cannot be empty'}), 400
+        # Ingest PDF
+        success, message = ingest_pdf(filepath)
         
-        # Run the query
-        result = qa_chain.invoke({"query": question})
+        if success:
+            # Reinitialize chain
+            init_success, init_message = initialize_chain()
+            if not init_success:
+                return jsonify({'success': False, 'message': init_message})
+            
+            return jsonify({'success': True, 'message': message})
+        else:
+            return jsonify({'success': False, 'message': message})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Upload error: {str(e)}'})
+
+
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    """Handle question answering requests."""
+    data = request.get_json()
+    question = data.get('question', '').strip()
+    
+    if not question:
+        return jsonify({'success': False, 'message': 'No question provided'})
+    
+    # Initialize chain if not already done
+    if rag_chain is None:
+        success, message = initialize_chain()
+        if not success:
+            return jsonify({'success': False, 'message': message})
+    
+    try:
+        # Get answer
+        answer = rag_chain.invoke(question)
         
-        answer = result["result"]
-        source_docs = result["source_documents"]
+        # Get source documents
+        source_docs = retriever.invoke(question)
         
         # Format sources
         sources = []
-        for i, doc in enumerate(source_docs, 1):
-            source = doc.metadata.get("source", "Unknown")
-            page = doc.metadata.get("page", "?")
-            snippet = doc.page_content[:150].replace("\n", " ")
-            if len(doc.page_content) > 150:
-                snippet += "..."
-            
+        for doc in source_docs:
             sources.append({
-                "id": i,
-                "file": os.path.basename(source),
-                "page": page + 1,
-                "snippet": snippet
+                'source': os.path.basename(doc.metadata.get('source', 'Unknown')),
+                'page': doc.metadata.get('page', 0) + 1,
+                'content': doc.page_content  # Full content, not truncated
             })
         
         return jsonify({
+            'success': True,
             'answer': answer,
             'sources': sources
         })
     
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'})
 
 
-@app.route('/api/health', methods=['GET'])
-def health():
-    """Health check endpoint."""
+@app.route('/status', methods=['GET'])
+def status():
+    """Check system status."""
+    has_db = os.path.exists(CHROMA_DB_DIR)
+    has_api_key = bool(os.getenv("OPENAI_API_KEY"))
+    
     return jsonify({
-        'status': 'healthy',
-        'qa_chain_loaded': qa_chain is not None
+        'has_documents': has_db,
+        'has_api_key': has_api_key,
+        'ready': has_db and has_api_key
     })
 
 
 if __name__ == '__main__':
-    # Initialize QA chain before starting the server
-    initialize_qa_chain()
+    print("\n" + "="*60)
+    print("🚀 PDF CHATBOT WEB APPLICATION")
+    print("="*60)
+    print("\n📝 Starting Flask server...")
+    print("\n🌐 Open your browser to: http://localhost:5000")
+    print("\n💡 Press Ctrl+C to stop the server\n")
     
-    # Run the Flask app
-    print("\n" + "=" * 60)
-    print("🚀 RAG Chatbot Web Interface")
-    print("=" * 60)
-    print("📂 Open your browser and go to: http://localhost:5000")
-    print("Press Ctrl+C to stop the server")
-    print("=" * 60 + "\n")
-    
-    app.run(debug=True, host='0.0.0.0', port=5000)
-
+    app.run(debug=True, port=5000)

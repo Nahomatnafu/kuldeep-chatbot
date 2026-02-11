@@ -3,53 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG Chatbot - AI Music Detection</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>PDF Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .upload-section {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .file-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .chat-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        .sources {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .sources h4 {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .source-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .source-item:hover {
+            background: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .source-header {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .source-text {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+            padding: 8px;
+            background: #fafafa;
+            border-left: 3px solid #667eea;
+            border-radius: 3px;
+            margin-top: 8px;
+            white-space: pre-wrap;
+        }
+
+        .expand-icon {
+            font-size: 0.8em;
+            transition: transform 0.2s;
+        }
+
+        .source-item.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .empty-state p {
+            margin-top: 10px;
+            font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>🎵 AI Music Detection Chatbot</h1>
-            <p class="subtitle">Ask questions about AI-generated music detection research</p>
-        </header>
+        <div class="header">
+            <h1>🤖 PDF Chatbot</h1>
+            <p>Upload a PDF and ask questions about its content</p>
+        </div>
 
-        <!-- Chat Container -->
-        <div class="chat-container" id="chatContainer">
-            <!-- Welcome Message -->
-            <div class="message bot-message">
-                <div class="message-content">
-                    <p><strong>👋 Hello!</strong></p>
-                    <p>I can answer questions about AI-generated music detection based on two research papers.</p>
-                    <p>Try asking:</p>
-                    <ul>
-                        <li>"What is SpectTTTra?"</li>
-                        <li>"What methods are used for AI music detection?"</li>
-                        <li>"What are the main challenges?"</li>
-                    </ul>
+        <div class="card">
+            <div class="upload-section">
+                <h2>📄 Upload PDF</h2>
+                <div class="file-input-wrapper">
+                    <input type="file" id="pdfFile" accept=".pdf">
+                    <button onclick="uploadPDF()" id="uploadBtn">Upload & Process</button>
+                </div>
+                <div id="uploadStatus" class="status"></div>
+            </div>
+
+            <div class="chat-section">
+                <h2>💬 Chat</h2>
+                <div class="chat-container" id="chatContainer">
+                    <div class="empty-state">
+                        <div style="font-size: 3em;">📚</div>
+                        <p>Upload a PDF to start asking questions</p>
+                    </div>
+                </div>
+                <div class="input-section">
+                    <input type="text" id="questionInput" placeholder="Ask a question about your PDF..." 
+                           onkeypress="if(event.key==='Enter') askQuestion()">
+                    <button onclick="askQuestion()" id="askBtn">Ask</button>
                 </div>
             </div>
         </div>
-
-        <!-- Input Area -->
-        <div class="input-container">
-            <form id="questionForm">
-                <input 
-                    type="text" 
-                    id="questionInput" 
-                    placeholder="Ask a question..." 
-                    autocomplete="off"
-                    required
-                >
-                <button type="submit" id="sendButton">
-                    <span id="sendIcon">Send</span>
-                    <span id="loadingIcon" style="display: none;">...</span>
-                </button>
-            </form>
-        </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        let isProcessing = false;
+
+        function showStatus(elementId, message, isSuccess) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + (isSuccess ? 'success' : 'error');
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!fileInput.files.length) {
+                showStatus('uploadStatus', 'Please select a PDF file', false);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('uploadStatus', data.message, true);
+                    document.querySelector('.empty-state').style.display = 'none';
+                } else {
+                    showStatus('uploadStatus', data.message, false);
+                }
+            } catch (error) {
+                showStatus('uploadStatus', 'Upload failed: ' + error.message, false);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload & Process';
+            }
+        }
+
+        async function askQuestion() {
+            if (isProcessing) return;
+
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+
+            if (!question) return;
+
+            isProcessing = true;
+            const askBtn = document.getElementById('askBtn');
+            askBtn.disabled = true;
+
+            // Add user message
+            addMessage(question, 'user');
+            questionInput.value = '';
+
+            // Add loading indicator
+            const loadingId = 'loading-' + Date.now();
+            addMessage('<div class="loading"></div>', 'bot', loadingId);
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+
+                // Remove loading indicator
+                document.getElementById(loadingId)?.remove();
+
+                if (data.success) {
+                    let messageHTML = data.answer;
+                    
+                    if (data.sources && data.sources.length > 0) {
+                        messageHTML += '<div class="sources"><h4>📚 Sources (click to expand):</h4>';
+                        data.sources.forEach((source, index) => {
+                            messageHTML += `
+                                <div class="source-item" onclick="toggleSource(this)">
+                                    <div class="source-header">
+                                        <span class="expand-icon">▶</span>
+                                        <span>${source.source} (Page ${source.page})</span>
+                                    </div>
+                                    <div class="source-text" style="display: none;">${source.content}</div>
+                                </div>`;
+                        });
+                        messageHTML += '</div>';
+                    }
+                    
+                    addMessage(messageHTML, 'bot');
+                } else {
+                    addMessage('❌ ' + data.message, 'bot');
+                }
+            } catch (error) {
+                document.getElementById(loadingId)?.remove();
+                addMessage('❌ Error: ' + error.message, 'bot');
+            } finally {
+                isProcessing = false;
+                askBtn.disabled = false;
+            }
+        }
+
+        function addMessage(content, type, id = null) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + type;
+            if (id) messageDiv.id = id;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function toggleSource(element) {
+            const sourceText = element.querySelector('.source-text');
+            const isExpanded = element.classList.contains('expanded');
+            
+            if (isExpanded) {
+                sourceText.style.display = 'none';
+                element.classList.remove('expanded');
+            } else {
+                sourceText.style.display = 'block';
+                element.classList.add('expanded');
+            }
+        }
+
+        // Check status on load
+        window.onload = async function() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                if (data.has_documents) {
+                    document.querySelector('.empty-state').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+            }
+        };
+    </script>
 </body>
 </html>
-

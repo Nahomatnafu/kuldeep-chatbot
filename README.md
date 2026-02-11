@@ -1,68 +1,35 @@
-# RAG Experiment - Nahom's Learning Branch
+# PDF Q&A Chatbot
 
-**Branch:** `rag-experiment-nahom`
+A simple RAG-based chatbot that answers questions from PDF documents.
 
-A minimal RAG (Retrieval-Augmented Generation) chatbot experiment using 2 research PDFs about AI-generated music detection.
+## Setup
 
-## Quick Start
-
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your OpenAI API key
-   ```
-
-3. **Run ingestion** (load PDFs into vector database):
-   ```bash
-   python src/ingest.py
-   ```
-
-4. **Ask questions:**
-
-   **Option A: Web Interface (Recommended)**
-   ```bash
-   python src/app.py
-   ```
-   Then open http://localhost:5000 in your browser
-
-   **Option B: Command Line**
-   ```bash
-   python src/query.py
-   ```
-
-## Project Structure
-
-```
-knowledge_base/experimental_pdfs_nahom/  # Research PDFs
-src/                                      # Source code
-  ├── ingest.py                          # PDF → Chroma pipeline
-  ├── query.py                           # CLI Q&A interface
-  ├── app.py                             # Web application
-  ├── templates/                         # HTML templates
-  │   └── index.html                     # Chat interface
-  └── static/                            # CSS & JavaScript
-      ├── style.css                      # Styling
-      └── script.js                      # Frontend logic
-requirements.txt                          # Python dependencies
-.env                                      # API keys (not committed)
+1. Create virtual environment:
+```bash
+python -m venv venv
+.\venv\Scripts\Activate.ps1  # Windows PowerShell
 ```
 
-## Scope
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-- ✅ Text-based Q&A only
-- ✅ 2 PDFs maximum
-- ✅ Local execution
-- ❌ No UI, no auth, no memory, no fine-tuning
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env and add your OpenAI API key
+```
 
-## Tech Stack
+4. Add PDF files to `data/pdfs/` directory
 
-- **LangChain** - RAG framework
-- **Chroma** - Vector database
-- **OpenAI** - Embeddings + LLM
-- **Python** - Everything else
+5. Run ingestion:
+```bash
+python src/ingest.py
+```
 
+## Project Status
+
+Currently in **Phase 1**: PDF Ingestion & Vectorization
+
+See `PROJECT_GUIDE.md` for full project documentation.

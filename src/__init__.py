@@ -1,2 +1,3 @@
-# RAG Experiment Source Code
-
+"""
+PDF Q&A Chatbot - RAG Implementation
+"""
