@@ -10,8 +10,15 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1>🎵 AI Music Detection Chatbot</h1>
-            <p class="subtitle">Ask questions about AI-generated music detection research</p>
+            <div class="header-content">
+                <div>
+                    <h1>🎵 AI Music Detection Chatbot</h1>
+                    <p class="subtitle">Ask questions about AI-generated music detection research</p>
+                </div>
+                <button id="clearButton" class="clear-button" title="Clear conversation history">
+                    🔄 Clear
+                </button>
+            </div>
         </header>
 
         <!-- Chat Container -->
@@ -20,10 +27,11 @@
             <div class="message bot-message">
                 <div class="message-content">
                     <p><strong>👋 Hello!</strong></p>
-                    <p>I can answer questions about AI-generated music detection based on two research papers.</p>
+                    <p>I can answer questions about AI-generated music detection based on two research papers. <strong>I now remember our conversation!</strong> You can ask follow-up questions.</p>
                     <p>Try asking:</p>
                     <ul>
                         <li>"What is SpectTTTra?"</li>
+                        <li>"What are its variants?" (follow-up)</li>
                         <li>"What methods are used for AI music detection?"</li>
                         <li>"What are the main challenges?"</li>
                     </ul>

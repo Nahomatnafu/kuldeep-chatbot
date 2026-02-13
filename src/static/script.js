@@ -5,6 +5,10 @@ const questionInput = document.getElementById('questionInput');
 const sendButton = document.getElementById('sendButton');
 const sendIcon = document.getElementById('sendIcon');
 const loadingIcon = document.getElementById('loadingIcon');
+const clearButton = document.getElementById('clearButton');
+
+// Generate a unique session ID for this browser tab
+const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
 // Add user message to chat
 function addUserMessage(text) {
@@ -105,24 +109,27 @@ questionForm.addEventListener('submit', async (e) => {
     setLoading(true);
     
     try {
-        // Send request to backend
+        // Send request to backend with session ID
         const response = await fetch('/api/ask', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ question }),
+            body: JSON.stringify({
+                question: question,
+                session_id: sessionId
+            }),
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(data.error || 'Something went wrong');
         }
-        
+
         // Add bot response
         addBotMessage(data.answer, data.sources);
-        
+
     } catch (error) {
         console.error('Error:', error);
         addErrorMessage(error.message);
@@ -131,6 +138,52 @@ questionForm.addEventListener('submit', async (e) => {
         questionInput.focus();
     }
 });
+
+// Clear conversation history
+if (clearButton) {
+    clearButton.addEventListener('click', async () => {
+        if (!confirm('Clear conversation history? This will start a fresh conversation.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session_id: sessionId }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Clear chat UI (keep only welcome message)
+                const welcomeMessage = chatContainer.querySelector('.bot-message');
+                chatContainer.innerHTML = '';
+                if (welcomeMessage) {
+                    chatContainer.appendChild(welcomeMessage);
+                }
+
+                // Add system message
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <p><strong>🔄 Conversation cleared!</strong> Starting fresh.</p>
+                    </div>
+                `;
+                chatContainer.appendChild(messageDiv);
+                scrollToBottom();
+            } else {
+                throw new Error(data.error || 'Failed to clear conversation');
+            }
+        } catch (error) {
+            console.error('Error clearing conversation:', error);
+            addErrorMessage('Failed to clear conversation: ' + error.message);
+        }
+    });
+}
 
 // Focus input on load
 window.addEventListener('load', () => {
