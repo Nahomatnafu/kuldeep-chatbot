@@ -172,9 +172,4 @@ temperature=0.3  # More focused (less creative)
 6. Modify chunk sizes and see effects
 7. Try different queries
 
-## Cost
 
-OpenAI GPT-3.5-turbo: ~$0.50 per 1M tokens
-HuggingFace embeddings: FREE
-
-For learning/testing, $5 should be plenty.
