@@ -3,6 +3,13 @@
 
 # Python
 __pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -29,6 +36,14 @@ wheels/
 # Chroma database
 chroma_db/
 *.chroma
+
+# Node / Frontend
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+*.tsbuildinfo
 
 # IDE
 .vscode/
