@@ -9,23 +9,6 @@ A minimal implementation of Retrieval-Augmented Generation (RAG) for learning. U
 - **Embeddings**: HuggingFace sentence-transformers (FREE, runs locally)
 - **LLM**: OpenAI GPT-3.5-turbo (for answer generation)
 
-## Why Two AI Services?
-
-**HuggingFace (FREE)**:
-- Converts text to vectors (embeddings)
-- Runs on your computer
-- No API key needed
-- Used for: Matching questions to relevant document chunks
-
-**OpenAI (Paid - ~$0.50 per 1M tokens)**:
-- Generates natural language answers
-- Requires API key
-- Used for: Creating the final answer based on retrieved context
-
-Think of it like:
-- HuggingFace = Your librarian finding relevant books
-- OpenAI = Your expert reading those books and explaining them
-
 ## How to Start
 
 ### Backend Setup
