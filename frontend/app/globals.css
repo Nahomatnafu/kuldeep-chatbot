@@ -1,0 +1,316 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import elegant fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+/* Professional color palette - nature-inspired with modern sophistication */
+:root {
+  /* Base colors */
+  --bg-primary: #fdfbf7;
+  --bg-secondary: #f8f6f1;
+  --bg-card: #ffffff;
+  
+  /* Text colors */
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  
+  /* Brand colors - sophisticated green palette */
+  --primary: #2d6a4f;
+  --primary-light: #40916c;
+  --primary-dark: #1b4332;
+  
+  /* Accent colors */
+  --accent: #d4a574;
+  --accent-light: #e6c9a8;
+  
+  /* Semantic colors */
+  --success: #52b788;
+  --success-light: #d8f3dc;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  
+  /* Borders and dividers */
+  --border: #e5e7eb;
+  --border-dark: #d1d5db;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+body {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+/* Notebook paper texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      rgba(45, 106, 79, 0.03) 31px,
+      rgba(45, 106, 79, 0.03) 32px
+    ),
+    radial-gradient(circle at 20% 50%, rgba(45, 106, 79, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Notebook left margin line */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 80px;
+  width: 2px;
+  height: 100%;
+  background: rgba(212, 165, 116, 0.15);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Modern card with subtle pinned/swaying effect */
+.sketch-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-0.5deg);
+}
+
+.sketch-card:hover {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.sketch-card-alt {
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.98) 100%);
+  transform: rotate(0.5deg);
+}
+
+.sketch-card-alt:hover {
+  transform: rotate(0deg) translateY(-4px);
+}
+
+/* Modern button with smooth interactions */
+.sketch-button {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgb(45 106 79 / 0.3), 0 2px 4px -1px rgb(45 106 79 / 0.2);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.sketch-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px -2px rgb(45 106 79 / 0.4), 0 4px 6px -1px rgb(45 106 79 / 0.3);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+}
+
+.sketch-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgb(45 106 79 / 0.3);
+}
+
+.sketch-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modern input with focus states */
+.sketch-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.sketch-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.sketch-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+  background: white;
+}
+
+/* Elegant heading style */
+.handwritten {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Modern message bubble */
+.message-bubble {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.message-bubble:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Decorative elements with subtle presence */
+.leaf {
+  position: absolute;
+  font-size: 32px;
+  opacity: 0.08;
+  filter: blur(0.5px);
+  transform: rotate(var(--rotate, 0deg));
+}
+
+/* Smooth, elegant animations */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+    opacity: 0.08;
+  }
+  50% { 
+    transform: translateY(-15px) rotate(8deg); 
+    opacity: 0.12;
+  }
+}
+
+.float-animation {
+  animation: float 8s ease-in-out infinite;
+}
+
+/* Fade in animation for page load */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Modern minimal scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+  border-radius: 10px;
+  border: 2px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Stable 3-dot loading indicator */
+.spinner {
+  width: 48px;
+  aspect-ratio: 2.5;
+  --dot: no-repeat radial-gradient(circle closest-side, var(--primary) 90%, transparent);
+  background:
+    var(--dot) 0% 50%,
+    var(--dot) 50% 50%,
+    var(--dot) 100% 50%;
+  background-size: calc(100% / 3) 45%;
+  animation: dots-wave 1s infinite linear;
+}
+
+@keyframes dots-wave {
+  0%,
+  100% {
+    background-position: 0% 50%, 50% 50%, 100% 50%;
+  }
+  20% {
+    background-position: 0% 0%, 50% 50%, 100% 50%;
+  }
+  40% {
+    background-position: 0% 100%, 50% 0%, 100% 50%;
+  }
+  60% {
+    background-position: 0% 50%, 50% 100%, 100% 0%;
+  }
+  80% {
+    background-position: 0% 50%, 50% 50%, 100% 100%;
+  }
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--success-light);
+  color: var(--primary-dark);
+  border: 1px solid rgba(45, 106, 79, 0.2);
+}
+
+/* Glassmorphism effect for special elements */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Divider line */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 24px 0;
+}
