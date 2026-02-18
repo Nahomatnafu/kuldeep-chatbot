@@ -1,7 +1,5 @@
 # RAG Chatbot - Document Q&A System
 
-A minimal implementation of Retrieval-Augmented Generation (RAG) for learning. Upload documents and ask questions about them.
-
 ## Tech Stack
 
 - **Backend**: FastAPI + LangChain + ChromaDB
