@@ -1,0 +1,240 @@
+"use client";
+
+/**
+ * DocumentSidebar — slide-in panel for managing the RAG knowledge base.
+ *
+ * Features:
+ *  • List all ingested documents with chunk counts
+ *  • Upload a new PDF (drag-or-click)
+ *  • Delete a document with confirmation
+ */
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import type { Document } from "@/lib/types";
+import { listDocuments, uploadDocument, deleteDocument } from "@/lib/documentApi";
+
+interface DocumentSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProps) {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deletingFile, setDeletingFile] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchDocuments = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const docs = await listDocuments();
+      setDocuments(docs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load documents.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) fetchDocuments();
+  }, [isOpen, fetchDocuments]);
+
+  const handleUpload = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      setError("Only PDF files are supported.");
+      return;
+    }
+    setIsUploading(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      const result = await uploadDocument(file);
+      setSuccessMsg(`"${result.filename}" uploaded — ${result.chunks} chunks indexed.`);
+      await fetchDocuments();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async (filename: string) => {
+    setDeletingFile(filename);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      await deleteDocument(filename);
+      setSuccessMsg(`"${filename}" removed from knowledge base.`);
+      await fetchDocuments();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed.");
+    } finally {
+      setDeletingFile(null);
+    }
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar panel */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 flex flex-col overflow-hidden transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ background: "linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)" }}
+        >
+          <span className="text-white font-semibold text-sm">Knowledge Base</span>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white transition-colors"
+            aria-label="Close sidebar"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Upload area */}
+        <div className="px-4 py-3 border-b border-gray-100">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleUpload(file);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 px-3 py-3 text-sm text-purple-600 hover:bg-purple-50 disabled:opacity-50 transition-colors"
+          >
+            {isUploading ? (
+              <>
+                <SpinnerIcon className="w-4 h-4 animate-spin" /> Uploading…
+              </>
+            ) : (
+              <>
+                <UploadIcon className="w-4 h-4" /> Upload PDF
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Status messages */}
+        {(error || successMsg) && (
+          <div className="px-4 py-2">
+            {error && (
+              <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1 wrap-break-word">{error}</p>
+            )}
+            {successMsg && (
+              <p className="text-xs text-green-700 bg-green-50 rounded px-2 py-1 wrap-break-word">{successMsg}</p>
+            )}
+          </div>
+        )}
+
+        {/* Document list */}
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <SpinnerIcon className="w-5 h-5 animate-spin text-purple-500" />
+            </div>
+          ) : documents.length === 0 ? (
+            <p className="text-xs text-gray-400 text-center py-8">
+              No documents yet. Upload a PDF to get started.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {documents.map((doc) => (
+                <li
+                  key={doc.filename}
+                  className="flex items-start gap-2 rounded-lg bg-gray-50 px-3 py-2"
+                  style={{ border: "1px solid #e5e7eb" }}
+                >
+                  <FileIcon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-700 truncate">{doc.filename}</p>
+                    <p className="text-[10px] text-gray-400">{doc.chunks} chunks</p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(doc.filename)}
+                    disabled={deletingFile === doc.filename}
+                    className="shrink-0 text-gray-300 hover:text-red-400 disabled:opacity-40 transition-colors"
+                    aria-label={`Delete ${doc.filename}`}
+                  >
+                    {deletingFile === doc.filename ? (
+                      <SpinnerIcon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <TrashIcon className="w-4 h-4" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </aside>
+    </>
+  );
+}
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
+      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+    </svg>
+  );
+}
+function FileIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
+}
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6m4-6v6" /><path d="M9 6V4h6v2" />
+    </svg>
+  );
+}
+function SpinnerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M12 2a10 10 0 0 1 10 10" />
+    </svg>
+  );
+}
+
