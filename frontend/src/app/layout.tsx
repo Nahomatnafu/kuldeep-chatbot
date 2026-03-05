@@ -17,6 +17,7 @@ const cinzel = Cinzel({
 export const metadata: Metadata = {
   title: "Kuldeep - AI Manufacturing Assistant",
   description: "Your AI assistant for manufacturing processes, manuals, and SOPs.",
+  icons: { icon: "/icon.png" },
 };
 
 export default function RootLayout({

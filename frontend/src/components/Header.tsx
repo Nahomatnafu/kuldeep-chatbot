@@ -12,10 +12,10 @@ export default function Header({ onDocsClick }: HeaderProps) {
       className="w-full flex items-center justify-between px-5 py-3"
       style={{ backgroundColor: "#3B82F6" }}
     >
-      {/* Left: Robot icon in white circle + docs button */}
+      {/* Left: Custom icon in white circle + docs button */}
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white/20">
-          <RobotIcon className="w-5 h-5 text-white" />
+          <img src="/icon.png" alt="Kuldeep icon" className="w-6 h-6 object-contain" />
         </div>
         {onDocsClick && (
           <button
