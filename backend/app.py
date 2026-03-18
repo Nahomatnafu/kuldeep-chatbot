@@ -18,6 +18,7 @@ GET  /api/health                   — Health check
 """
 
 import os
+import csv
 import json
 import shutil
 import traceback
@@ -36,6 +37,7 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 
 load_dotenv()
 
@@ -48,6 +50,7 @@ NUM_CHUNKS         = 6          # Nahom's k=6 for higher recall
 CHUNK_SIZE         = 1000
 CHUNK_OVERLAP      = 200
 MAX_UPLOAD_MB      = 32
+ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"}
 
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
@@ -174,14 +177,59 @@ def _init_store() -> tuple[bool, str]:
         return False, f"Failed to load vector store: {exc}"
 
 
-# ── Helper: ingest a single PDF ───────────────────────────────────────────────
-def _ingest_pdf(filepath: Path) -> tuple[bool, str, int]:
-    """Chunk and embed a PDF into FAISS. Returns (ok, message, chunk_count)."""
+# ── Helper: load documents from any supported file type ─────────────────────
+def _load_docs(filepath: Path) -> list:
+    """Return a list of LangChain Documents for any supported file type."""
+    ext = filepath.suffix.lower()
+
+    if ext == ".pdf":
+        return PyPDFLoader(str(filepath)).load()
+
+    if ext in (".txt", ".md"):
+        from langchain_community.document_loaders import TextLoader
+        return TextLoader(str(filepath), encoding="utf-8").load()
+
+    if ext == ".json":
+        text = filepath.read_text(encoding="utf-8")
+        try:
+            content = json.dumps(json.loads(text), indent=2)
+        except json.JSONDecodeError:
+            content = text
+        return [Document(page_content=content, metadata={"source": str(filepath)})]
+
+    if ext == ".docx":
+        from langchain_community.document_loaders import Docx2txtLoader
+        return Docx2txtLoader(str(filepath)).load()
+
+    if ext in (".csv", ".tsv"):
+        delimiter = "\t" if ext == ".tsv" else ","
+        rows = []
+        with filepath.open(encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f, delimiter=delimiter)
+            for row in reader:
+                rows.append(", ".join(f"{k}: {v}" for k, v in row.items()))
+        return [Document(page_content="\n".join(rows), metadata={"source": str(filepath)})]
+
+    if ext in (".html", ".htm"):
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(filepath.read_text(encoding="utf-8"), "lxml")
+        for tag in soup(["script", "style"]):
+            tag.decompose()
+        return [Document(page_content=soup.get_text(separator="\n", strip=True), metadata={"source": str(filepath)})]
+
+    return []
+
+
+# ── Helper: ingest a single file ──────────────────────────────────────────────
+def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
+    """Chunk and embed any supported file into FAISS. Returns (ok, message, chunk_count)."""
     try:
-        loader   = PyPDFLoader(str(filepath))
-        docs     = loader.load()
-        splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
-        chunks   = splitter.split_documents(docs)
+        docs = _load_docs(filepath)
+        if not docs:
+            return False, f"No content extracted from {filepath.name}.", 0
+
+        splitter   = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+        chunks     = splitter.split_documents(docs)
 
         embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
 
@@ -301,14 +349,16 @@ def upload_document():
         return jsonify({"success": False, "message": "No file field in request"}), 400
 
     file = request.files["file"]
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        return jsonify({"success": False, "message": "Only PDF files are accepted"}), 400
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if not file.filename or ext not in ALLOWED_EXTENSIONS:
+        allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
+        return jsonify({"success": False, "message": f"Unsupported file type. Allowed: {allowed}"}), 400
 
     filename = secure_filename(file.filename)
     filepath = KNOWLEDGE_BASE_DIR / filename
     file.save(filepath)
 
-    ok, msg, chunk_count = _ingest_pdf(filepath)
+    ok, msg, chunk_count = _ingest_file(filepath)
     if not ok:
         filepath.unlink(missing_ok=True)
         return jsonify({"success": False, "message": msg}), 500
@@ -349,14 +399,13 @@ def delete_document(filename: str):
     if os.path.exists(FAISS_DB_DIR):
         shutil.rmtree(FAISS_DB_DIR)
 
-    remaining = list(KNOWLEDGE_BASE_DIR.glob("*.pdf"))
+    remaining = [p for ext in ALLOWED_EXTENSIONS for p in KNOWLEDGE_BASE_DIR.glob(f"*{ext}")]
     if remaining:
         embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
         splitter   = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
         all_chunks = []
-        for pdf in remaining:
-            loader = PyPDFLoader(str(pdf))
-            chunks = splitter.split_documents(loader.load())
+        for doc_path in remaining:
+            chunks = splitter.split_documents(_load_docs(doc_path))
             all_chunks.extend(chunks)
         FAISS.from_documents(all_chunks, embedding=embeddings).save_local(FAISS_DB_DIR)
         _init_store()

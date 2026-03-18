@@ -44,9 +44,11 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
     if (isOpen) fetchDocuments();
   }, [isOpen, fetchDocuments]);
 
+  const ALLOWED_EXT = new Set([".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"]);
   const handleUpload = async (file: File) => {
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setError("Only PDF files are supported.");
+    const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+    if (!ALLOWED_EXT.has(ext)) {
+      setError("Unsupported file type. Allowed: PDF, TXT, MD, JSON, DOCX, CSV, TSV, HTML.");
       return;
     }
     setIsUploading(true);
@@ -115,7 +117,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf"
+            accept=".pdf,.txt,.md,.json,.docx,.csv,.tsv,.html,.htm"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -134,7 +136,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
               </>
             ) : (
               <>
-                <UploadIcon className="w-4 h-4" /> Upload PDF
+                <UploadIcon className="w-4 h-4" /> Upload Document
               </>
             )}
           </button>
@@ -160,7 +162,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
             </div>
           ) : documents.length === 0 ? (
             <p className="text-xs text-gray-400 text-center py-8">
-              No documents yet. Upload a PDF to get started.
+              No documents yet. Upload a file to get started.
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
