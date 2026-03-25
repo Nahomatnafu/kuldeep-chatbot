@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions";
 const OPENAI_TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL ?? "whisper-1";
 const OPENAI_TRANSCRIBE_LANGUAGE = "en";
+const MAX_AUDIO_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB — Whisper API hard limit
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,6 +27,13 @@ export async function POST(req: NextRequest) {
 
     if (audio.size === 0) {
       return NextResponse.json({ error: "Audio file is empty." }, { status: 400 });
+    }
+
+    if (audio.size > MAX_AUDIO_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: `Audio file exceeds the 25 MB limit (received ${(audio.size / 1024 / 1024).toFixed(1)} MB).` },
+        { status: 413 }
+      );
     }
 
     const upstreamForm = new FormData();
