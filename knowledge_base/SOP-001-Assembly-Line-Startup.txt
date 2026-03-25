@@ -1,0 +1,133 @@
+================================================================================
+STANDARD OPERATING PROCEDURE
+SOP-001: Assembly Line Startup & Pre-Production Checklist
+================================================================================
+Document No:     SOP-001
+Revision:        Rev C
+Effective Date:  2025-01-15
+Department:      Production / Assembly
+Authored By:     J. Martinez, Process Engineer
+Approved By:     R. Thompson, Plant Manager
+Next Review:     2026-01-15
+================================================================================
+
+1. PURPOSE
+----------
+This SOP defines the standard startup procedure for Assembly Line 3 (AL-3) at
+Facility 4B. It ensures that all equipment, safety systems, and personnel are
+properly prepared before production begins. Following this procedure eliminates
+unplanned downtime, reduces defect rates, and maintains compliance with ISO
+9001:2015 and OSHA 29 CFR 1910 standards.
+
+2. SCOPE
+--------
+This procedure applies to all operators, leads, and supervisors assigned to
+AL-3 during first-shift, second-shift, and weekend production runs. It must
+be completed in full before the first unit enters the line.
+
+3. RESPONSIBILITIES
+-------------------
+- Line Operator:       Perform all checklist steps. Sign the daily log.
+- Shift Lead:          Verify completion. Counter-sign the daily log.
+- Maintenance Tech:    Respond within 15 minutes to any flagged equipment
+                       issue before production is authorized.
+- Quality Inspector:   Conduct first-article inspection after startup.
+
+4. REQUIRED PPE
+---------------
+All personnel must be wearing the following before entering AL-3:
+  [ ] Safety glasses (ANSI Z87.1 rated)
+  [ ] Steel-toed boots (ASTM F2413)
+  [ ] High-visibility vest (Class 2 minimum)
+  [ ] Cut-resistant gloves when handling sheet metal components
+
+5. EQUIPMENT & MATERIALS NEEDED
+---------------------------------
+  - AL-3 Daily Startup Log (Form QC-104)
+  - Digital torque wrench (calibration current — see tag on handle)
+  - Calibrated pressure gauge (0–200 PSI range)
+  - Lockout/Tagout (LOTO) kit — assigned to operator
+  - Lubricant: Mobilux EP2 grease (bin location: Rack B-12)
+  - Cleaning rags (lint-free, Part No. MNT-CLN-001)
+
+6. PROCEDURE
+------------
+
+STEP 1: FACILITY & SAFETY WALKTHROUGH (Est. 10 min)
+  1.1  Inspect AL-3 aisle for trip hazards, spills, and obstructions.
+       Clear any debris to designated waste bins.
+  1.2  Verify that all emergency stop (E-STOP) buttons are unobstructed
+       and visually accessible. Test one E-STOP per shift per the test
+       log — do NOT test all; rotate which one is tested.
+  1.3  Confirm fire extinguisher at Station 7 is in the green zone
+       and last inspection date is within 12 months.
+  1.4  Check that first-aid kit at Station 1 is stocked. Flag missing
+       items to the shift lead immediately.
+
+STEP 2: CONVEYANCE SYSTEM INSPECTION (Est. 15 min)
+  2.1  Inspect conveyor belt (Sections A–F) for visible tears, fraying,
+       or misalignment. Do not start line if belt damage is observed;
+       contact Maintenance (ext. 4112).
+  2.2  Verify belt tension using the tension gauge at the tail pulley.
+       Acceptable range: 80–110 lbs. Record reading in Form QC-104.
+  2.3  Lubricate all conveyor bearing points (12 total) with Mobilux EP2.
+       Apply 3–5 pumps per fitting. Wipe excess grease.
+  2.4  Inspect all guide rails for straightness. Adjust alignment brackets
+       if lateral deviation exceeds 2mm. See Work Instruction WI-014.
+
+STEP 3: PNEUMATIC SYSTEM CHECK (Est. 5 min)
+  3.1  Open the main pneumatic supply valve (yellow handle, Panel P-3).
+  3.2  Allow system pressure to stabilize for 60 seconds.
+  3.3  Verify system pressure reads 90–110 PSI on the main gauge.
+  3.4  Inspect air hoses at Stations 2, 5, and 9 for cracks or leaks.
+       Apply soapy water to fittings if a leak is suspected.
+  3.5  Drain condensate from the air dryer drain valve. Close fully.
+
+STEP 4: TOOLING & FIXTURE VERIFICATION (Est. 10 min)
+  4.1  Confirm that correct tooling revision is installed per the current
+       production traveler. Check revision letter against Tool Matrix TM-22.
+  4.2  Inspect all fixtures for damage, missing locating pins, or loose
+       clamps. Replace or tighten as needed before proceeding.
+  4.3  Perform a torque audit on five (5) randomly selected fixture bolts
+       using the calibrated torque wrench. Required torque: 25 ± 2 Nm.
+       Record results in Form QC-104, Section C.
+
+STEP 5: ELECTRICAL & CONTROLS SYSTEM (Est. 5 min)
+  5.1  Power on the main control panel (MCP-AL3). Wait for PLC HMI to
+       fully boot (approx. 45 seconds).
+  5.2  Acknowledge any latched alarms from the previous shift. Investigate
+       any FAULT alarms with Maintenance before authorizing startup.
+  5.3  Confirm machine vision system (Camera C1 and C2) display live feed.
+       Clean camera lenses if image appears hazy — use lens wipe only.
+  5.4  Run conveyor at 20% speed for 2 minutes. Observe for unusual noise
+       or vibration. Log observations in Form QC-104.
+
+STEP 6: FIRST ARTICLE INSPECTION (Est. 15 min)
+  6.1  Run 3 units through the full assembly process.
+  6.2  Hand off units to Quality Inspector for FAI per QP-017.
+  6.3  DO NOT begin production run until Quality Inspector signs off FAI
+       on Form QC-104, Section D.
+
+7. SIGN-OFF & DOCUMENTATION
+----------------------------
+  [ ] Line Operator prints name, signs, and records start time on Form QC-104.
+  [ ] Shift Lead reviews and counter-signs Form QC-104.
+  [ ] Completed form is submitted to the Production Office by 08:30 daily.
+
+8. DEVIATIONS & ESCALATION
+---------------------------
+Any failure to meet specification during startup (e.g., pressure out of range,
+failed FAI, equipment damage) must be reported to the Shift Lead immediately.
+Production must NOT begin until the deviation is resolved and documented on
+Non-Conformance Report NCR Form (Form QC-201).
+
+9. REVISION HISTORY
+--------------------
+Rev A  |  2023-06-01  |  Initial release
+Rev B  |  2024-03-10  |  Added Section 5.3 (machine vision check)
+Rev C  |  2025-01-15  |  Updated torque spec (Section 4.3) from 22 Nm to 25 Nm.
+                         Added FAI requirement in Section 6.3.
+
+================================================================================
+END OF SOP-001 Rev C
+================================================================================

@@ -52,3 +52,37 @@ export async function sendMessage(
 
   return res.json() as Promise<ChatResponse>;
 }
+
+/**
+ * Send a recorded audio blob to the server-side Whisper proxy and get text back.
+ */
+export async function transcribeAudio(
+  audioBlob: Blob,
+  filename = "recording.webm"
+): Promise<string> {
+  const formData = new FormData();
+  formData.append("audio", audioBlob, filename);
+
+  const res = await fetch(`${API_BASE}/api/transcribe`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let message: string;
+    try {
+      const errData = await res.json();
+      message = errData.error ?? `Transcription failed (${res.status})`;
+    } catch {
+      message = await res.text().catch(() => `Transcription failed (${res.status})`);
+    }
+    throw new Error(message);
+  }
+
+  const data = (await res.json()) as { text?: string };
+  if (!data.text) {
+    throw new Error("No transcription text returned.");
+  }
+
+  return data.text;
+}

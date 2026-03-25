@@ -1,0 +1,26 @@
+{
+  "SOP-001-Assembly-Line-Startup.txt": {
+    "chunks": 9,
+    "uploaded_at": "2026-03-20T15:38:49.135112+00:00"
+  },
+  "SOP-002-LOTO-Procedure.md": {
+    "chunks": 11,
+    "uploaded_at": "2026-03-20T15:39:41.518533+00:00"
+  },
+  "SOP-007-Incoming-Material-Inspection.docx": {
+    "chunks": 9,
+    "uploaded_at": "2026-03-20T15:41:15.730836+00:00"
+  },
+  "QC-inspection-log-AL3-March2025.csv": {
+    "chunks": 17,
+    "uploaded_at": "2026-03-20T15:42:35.224397+00:00"
+  },
+  "PM-schedule-AL3-2025.tsv": {
+    "chunks": 15,
+    "uploaded_at": "2026-03-20T15:42:44.024358+00:00"
+  },
+  "HPM100-operator-manual-AL3.html": {
+    "chunks": 12,
+    "uploaded_at": "2026-03-20T15:42:51.275478+00:00"
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, KeyboardEvent } from "react";
+import { useEffect, useRef, useState, KeyboardEvent } from "react";
+import { transcribeAudio } from "@/lib/chatApi";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -9,11 +10,22 @@ interface ChatInputProps {
 
 export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [value, setValue] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
 
   const handleSend = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if (!trimmed || disabled || isTranscribing || isRecording) return;
     onSend(trimmed);
     setValue("");
     if (textareaRef.current) {
@@ -33,6 +45,79 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
     if (!el) return;
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  };
+
+  const stopRecorder = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const startRecorder = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      window.alert("Voice input is not supported in this browser.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      chunksRef.current = [];
+
+      let recorder: MediaRecorder;
+      try {
+        recorder = new MediaRecorder(stream);
+      } catch (recorderErr) {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        throw recorderErr;
+      }
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        mediaRecorderRef.current = null;
+
+        if (audioBlob.size === 0) return;
+
+        setIsTranscribing(true);
+        try {
+          const text = await transcribeAudio(audioBlob);
+          setValue((prev) => (prev ? `${prev} ${text}`.trim() : text));
+          requestAnimationFrame(() => handleInput());
+        } catch (err) {
+          console.error("[voice] transcription failed:", err);
+          window.alert(err instanceof Error ? err.message : "Failed to transcribe audio.");
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("[voice] microphone access failed:", err);
+      window.alert("Microphone access was denied or unavailable.");
+    }
+  };
+
+  const handleMicClick = async () => {
+    if (disabled || isTranscribing) return;
+    if (isRecording) {
+      stopRecorder();
+      return;
+    }
+    await startRecorder();
   };
 
   return (
@@ -60,25 +145,37 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onInput={handleInput}
-        placeholder="Ask Kuldeep about manuals, SOPs, or processes..."
-        disabled={disabled}
+        placeholder={isTranscribing ? "Transcribing audio..." : "Ask Kuldeep about manuals, SOPs, or processes..."}
+        disabled={disabled || isTranscribing}
         className="flex-1 resize-none bg-transparent text-[#374151] placeholder-gray-400 text-sm leading-relaxed focus:outline-none"
         style={{ minHeight: "24px", maxHeight: "160px" }}
       />
 
       {/* Mic icon */}
       <button
-        className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
-        aria-label="Voice input"
+        className={`relative shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+          isTranscribing
+            ? "bg-amber-50 text-amber-600 border border-amber-200"
+            : isRecording
+              ? "bg-red-50 text-red-600 border border-red-200 shadow-[0_0_0_6px_rgba(239,68,68,0.10)]"
+              : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 hover:text-gray-700"
+        }`}
+        aria-label={isRecording ? "Stop voice recording" : "Start voice recording"}
+        title={isTranscribing ? "Transcribing" : isRecording ? "Recording" : "Voice input"}
         type="button"
+        onClick={handleMicClick}
+        disabled={disabled || isTranscribing}
       >
+        {isRecording && (
+          <span className="absolute inset-0 rounded-full border-2 border-red-300 animate-ping" />
+        )}
         <MicIcon className="w-5 h-5" />
       </button>
 
       {/* Send button */}
       <button
         onClick={handleSend}
-        disabled={!value.trim() || disabled}
+        disabled={!value.trim() || disabled || isTranscribing || isRecording}
         className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-opacity"
         style={{ backgroundColor: "#3B82F6" }}
         aria-label="Send message"

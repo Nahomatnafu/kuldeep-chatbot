@@ -12,13 +12,8 @@ export default function WelcomePage({ onSend }: WelcomePageProps) {
     <div className="flex flex-col flex-1 items-center justify-between" style={{ backgroundColor: "#f3f4f6" }}>
       {/* Hero section */}
       <div className="flex flex-col items-center pt-16 pb-8 px-4">
-        {/* Gradient robot avatar */}
-        <div
-          className="flex items-center justify-center w-16 h-16 rounded-full mb-5"
-          style={{ background: "linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)" }}
-        >
-          <BotIcon className="w-9 h-9 text-white" />
-        </div>
+        {/* Custom icon avatar */}
+        <img src="/icon.png" alt="Kuldeep icon" className="w-16 h-16 object-contain mb-5" />
 
         {/* Heading */}
         <h1 className="text-[#1a202c] text-2xl font-semibold mb-2 tracking-tight">
