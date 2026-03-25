@@ -5,7 +5,7 @@
  *
  * Features:
  *  • List all ingested documents with chunk counts
- *  • Upload a single file (click)
+ *  • Upload one or more files at once (click)
  *  • Upload a folder (click or drag-and-drop) — top-level files only
  *  • Delete a document with confirmation
  */
@@ -237,15 +237,17 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
 
         {/* Upload area */}
         <div className="px-4 py-3 border-b border-gray-100 flex flex-col gap-2">
-          {/* Hidden single-file input */}
+          {/* Hidden multi-file input */}
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf,.txt,.md,.json,.docx,.csv,.tsv,.html,.htm"
+            multiple
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleUpload(file);
+              const files = Array.from(e.target.files ?? []);
+              if (files.length === 1) handleUpload(files[0]);
+              else if (files.length > 1) uploadFiles(files);
               e.target.value = "";
             }}
           />
@@ -260,7 +262,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
             onChange={handleFolderInputChange}
           />
 
-          {/* Single file button */}
+          {/* Multi-file button */}
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isBusy}
@@ -270,9 +272,14 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
               <>
                 <SpinnerIcon className="w-4 h-4 animate-spin" /> Uploading…
               </>
+            ) : folderProgress !== null ? (
+              <>
+                <SpinnerIcon className="w-4 h-4 animate-spin" />
+                Uploading {folderProgress.current} / {folderProgress.total}…
+              </>
             ) : (
               <>
-                <UploadIcon className="w-4 h-4" /> Upload File
+                <UploadIcon className="w-4 h-4" /> Upload Files
               </>
             )}
           </button>
