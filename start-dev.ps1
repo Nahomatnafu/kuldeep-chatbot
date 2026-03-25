@@ -76,10 +76,9 @@ if ($InstallDeps) {
 }
 
 $condaNoPluginsCmd = "`$env:CONDA_NO_PLUGINS='true'; "
-$openMpFixCmd = "`$env:KMP_DUPLICATE_LIB_OK='TRUE'; "
 
 if (-not $NoBackend) {
-    $backendCommand = "${condaNoPluginsCmd}${openMpFixCmd}Set-Location '$rootPath'; ${backendInstallCmd}& '$venvPython' '$backendRun'"
+    $backendCommand = "${condaNoPluginsCmd}Set-Location '$rootPath'; ${backendInstallCmd}& '$venvPython' '$backendRun'"
     Start-Process powershell -WorkingDirectory $rootPath -ArgumentList @(
         "-NoProfile",
         "-NoExit",
