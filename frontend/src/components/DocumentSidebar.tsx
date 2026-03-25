@@ -5,7 +5,8 @@
  *
  * Features:
  *  • List all ingested documents with chunk counts
- *  • Upload a new PDF (drag-or-click)
+ *  • Upload a single file (click)
+ *  • Upload a folder (click or drag-and-drop) — top-level files only
  *  • Delete a document with confirmation
  */
 
@@ -22,10 +23,13 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [folderProgress, setFolderProgress] = useState<{ current: number; total: number } | null>(null);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const fetchDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -45,9 +49,11 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
   }, [isOpen, fetchDocuments]);
 
   const ALLOWED_EXT = new Set([".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"]);
+
+  const getExt = (name: string) => `.${name.split(".").pop()?.toLowerCase() ?? ""}`;
+
   const handleUpload = async (file: File) => {
-    const ext = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
-    if (!ALLOWED_EXT.has(ext)) {
+    if (!ALLOWED_EXT.has(getExt(file.name))) {
       setError("Unsupported file type. Allowed: PDF, TXT, MD, JSON, DOCX, CSV, TSV, HTML.");
       return;
     }
@@ -65,6 +71,118 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
     }
   };
 
+  const uploadFiles = useCallback(async (files: File[]) => {
+    const supported = files.filter((f) => ALLOWED_EXT.has(getExt(f.name)));
+    const skipped = files.length - supported.length;
+
+    if (supported.length === 0) {
+      setError("No supported files found in the folder.");
+      return;
+    }
+
+    setError(null);
+    setSuccessMsg(null);
+    setFolderProgress({ current: 0, total: supported.length });
+
+    let uploaded = 0;
+    const failedFiles: { name: string; reason: string }[] = [];
+
+    for (const file of supported) {
+      try {
+        await uploadDocument(file);
+        uploaded++;
+      } catch (err) {
+        failedFiles.push({
+          name: file.name,
+          reason: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+      setFolderProgress({ current: uploaded + failedFiles.length, total: supported.length });
+    }
+
+    await fetchDocuments();
+    setFolderProgress(null);
+
+    const parts: string[] = [];
+    if (uploaded > 0) parts.push(`${uploaded} file${uploaded !== 1 ? "s" : ""} uploaded`);
+    if (skipped > 0) parts.push(`${skipped} skipped (unsupported type)`);
+    if (parts.length > 0) setSuccessMsg(parts.join(", ") + ".");
+
+    if (failedFiles.length > 0) {
+      const details = failedFiles.map((f) => `• ${f.name}: ${f.reason}`).join("\n");
+      setError(`${failedFiles.length} file${failedFiles.length !== 1 ? "s" : ""} failed:\n${details}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDocuments]);
+
+  const handleFolderInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    // webkitRelativePath format: "folderName/file.ext" — filter to top-level only
+    const topLevel = files.filter((f) => f.webkitRelativePath.split("/").length === 2);
+    e.target.value = "";
+    if (topLevel.length > 0) uploadFiles(topLevel);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    const items = Array.from(e.dataTransfer.items);
+    const collectedFiles: File[] = [];
+    let pending = 0;
+
+    const tryFinish = () => {
+      if (pending === 0 && collectedFiles.length > 0) {
+        uploadFiles(collectedFiles);
+      } else if (pending === 0) {
+        setError("No files found in the dropped folder.");
+      }
+    };
+
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry?.();
+      if (!entry) continue;
+
+      if (entry.isDirectory) {
+        pending++;
+        (entry as FileSystemDirectoryEntry).createReader().readEntries((entries) => {
+          for (const child of entries) {
+            if (!child.isDirectory) {
+              pending++;
+              (child as FileSystemFileEntry).file((file) => {
+                collectedFiles.push(file);
+                pending--;
+                tryFinish();
+              });
+            }
+          }
+          pending--;
+          tryFinish();
+        });
+      } else if (entry.isFile) {
+        pending++;
+        (entry as FileSystemFileEntry).file((file) => {
+          collectedFiles.push(file);
+          pending--;
+          tryFinish();
+        });
+      }
+    }
+
+    if (pending === 0) tryFinish();
+  };
+
   const handleDelete = async (filename: string) => {
     setDeletingFile(filename);
     setError(null);
@@ -79,6 +197,8 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
       setDeletingFile(null);
     }
   };
+
+  const isBusy = isUploading || folderProgress !== null;
 
   return (
     <>
@@ -95,7 +215,10 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
       <aside
         className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 flex flex-col overflow-hidden transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${isDragOver ? "ring-2 ring-inset ring-purple-400" : ""}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {/* Header */}
         <div
@@ -113,7 +236,8 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
         </div>
 
         {/* Upload area */}
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-gray-100 flex flex-col gap-2">
+          {/* Hidden single-file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -125,10 +249,22 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
               e.target.value = "";
             }}
           />
+          {/* Hidden folder input */}
+          <input
+            ref={folderInputRef}
+            type="file"
+            /* @ts-expect-error webkitdirectory is not in React's types */
+            webkitdirectory=""
+            multiple
+            className="hidden"
+            onChange={handleFolderInputChange}
+          />
+
+          {/* Single file button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 px-3 py-3 text-sm text-purple-600 hover:bg-purple-50 disabled:opacity-50 transition-colors"
+            disabled={isBusy}
+            className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 px-3 py-2.5 text-sm text-purple-600 hover:bg-purple-50 disabled:opacity-50 transition-colors"
           >
             {isUploading ? (
               <>
@@ -136,17 +272,41 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
               </>
             ) : (
               <>
-                <UploadIcon className="w-4 h-4" /> Upload Document
+                <UploadIcon className="w-4 h-4" /> Upload File
               </>
             )}
           </button>
+
+          {/* Folder button */}
+          <button
+            onClick={() => folderInputRef.current?.click()}
+            disabled={isBusy}
+            className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-300 px-3 py-2.5 text-sm text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
+          >
+            {folderProgress !== null ? (
+              <>
+                <SpinnerIcon className="w-4 h-4 animate-spin" />
+                Uploading {folderProgress.current} / {folderProgress.total}…
+              </>
+            ) : (
+              <>
+                <FolderIcon className="w-4 h-4" /> Upload Folder
+              </>
+            )}
+          </button>
+
+          {isDragOver && (
+            <p className="text-center text-xs text-purple-500 font-medium animate-pulse">
+              Drop folder here
+            </p>
+          )}
         </div>
 
         {/* Status messages */}
         {(error || successMsg) && (
           <div className="px-4 py-2">
             {error && (
-              <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1 wrap-break-word">{error}</p>
+              <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1 wrap-break-word whitespace-pre-line">{error}</p>
             )}
             {successMsg && (
               <p className="text-xs text-green-700 bg-green-50 rounded px-2 py-1 wrap-break-word">{successMsg}</p>
@@ -236,6 +396,13 @@ function SpinnerIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <path d="M12 2a10 10 0 0 1 10 10" />
+    </svg>
+  );
+}
+function FolderIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
     </svg>
   );
 }

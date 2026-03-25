@@ -379,19 +379,15 @@ def upload_document():
 @app.route("/api/documents/<filename>", methods=["DELETE"])
 def delete_document(filename: str):
     """
-    Delete a document's PDF file and remove its vectors from FAISS.
-    FAISS does not support selective deletion by source metadata,
-    so we rebuild the DB from the remaining PDFs.
+    Delete a document file and remove its vectors from FAISS.
+    FAISS does not support selective deletion, so we rebuild from remaining docs.
     """
     registry = _load_doc_registry()
     if filename not in registry:
         return jsonify({"success": False, "message": "Document not found"}), 404
 
-    # Remove PDF file
-    pdf_path = KNOWLEDGE_BASE_DIR / filename
-    pdf_path.unlink(missing_ok=True)
-
-    # Remove from registry
+    # Remove file and registry entry
+    (KNOWLEDGE_BASE_DIR / filename).unlink(missing_ok=True)
     del registry[filename]
     _save_doc_registry(registry)
 
@@ -405,14 +401,11 @@ def delete_document(filename: str):
         splitter   = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
         all_chunks = []
         for doc_path in remaining:
-            chunks = splitter.split_documents(_load_docs(doc_path))
-            all_chunks.extend(chunks)
+            all_chunks.extend(splitter.split_documents(_load_docs(doc_path)))
         FAISS.from_documents(all_chunks, embedding=embeddings).save_local(FAISS_DB_DIR)
         _init_store()
 
-    # Clear sessions — they now point to a stale retriever
     conversation_sessions.clear()
-
     return jsonify({"success": True, "message": f"{filename} deleted and vectors rebuilt."})
 
 
@@ -444,7 +437,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("  Collective-Experiment RAG Chatbot  —  Flask Backend")
     print("=" * 60)
-    _init_store()   # best-effort on startup; will retry lazily on first /chat
+    _init_store()   # best-effort on startup; 
     print("  Open: http://localhost:5000")
     print("=" * 60 + "\n")
     app.run(debug=True, host="0.0.0.0", port=5000)

@@ -17,6 +17,7 @@ export async function DELETE(
 
     const upstream = await fetch(`${FLASK_URL}/api/documents/${encoded}`, {
       method: "DELETE",
+      signal: AbortSignal.timeout(120_000), // 2 minutes 
     });
 
     const data = await upstream.json();
