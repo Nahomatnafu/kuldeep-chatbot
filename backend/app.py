@@ -21,6 +21,7 @@ import os
 import csv
 import json
 import shutil
+import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -55,6 +56,8 @@ BROAD_INTENT_PHRASES = {
     "all documents", "all docs", "across all", "across documents", "from all",
     "compare", "consolidate", "summarize all", "all relevant", "every document",
 }
+SESSION_TTL_SECONDS      = 2 * 60 * 60   # evict sessions idle for 2 hours
+MAX_MULTI_DOC_CHUNKS     = 40            # hard cap on total chunks sent to LLM (≈10K tokens)
 
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
@@ -443,10 +446,22 @@ def _detect_scope(message: str, session_id: str) -> tuple:
     return ("pass", None)
 
 
+def _evict_stale_sessions() -> None:
+    """Remove sessions that have been idle longer than SESSION_TTL_SECONDS."""
+    now     = time.monotonic()
+    stale   = [sid for sid, s in conversation_sessions.items()
+               if now - s.get("last_accessed", now) > SESSION_TTL_SECONDS]
+    for sid in stale:
+        conversation_sessions.pop(sid, None)
+
+
 def _answer_single_doc(question: str, filename: str, session_id: str):
     """Retrieve chunks, keep only those from `filename`, answer with the strict QA prompt."""
-    # Fetch a generous candidate pool then filter — FAISS has no metadata filter API
-    candidates = vectorstore.similarity_search(question, k=20)
+    # Fetch a generous candidate pool then filter — FAISS has no metadata filter API.
+    # Scale pool with doc count so the target doc is never crowded out.
+    num_docs   = max(1, len(_load_doc_registry()))
+    pool_k     = max(20, num_docs * 5)
+    candidates = vectorstore.similarity_search(question, k=pool_k)
     doc_chunks  = [
         doc for doc in candidates
         if os.path.basename(doc.metadata.get("source", "")) == filename
@@ -485,13 +500,18 @@ def _answer_single_doc(question: str, filename: str, session_id: str):
 
 def _answer_multi_doc(question: str, session_id: str):
     """Retrieve chunks balanced across sources and synthesize with multi-doc prompt."""
-    candidates = vectorstore.similarity_search(question, k=15)
+    # Scale k with the number of known documents so every doc gets fair representation.
+    # Cap total chunks at MAX_MULTI_DOC_CHUNKS to stay within the LLM context window.
+    num_docs       = max(1, len(_load_doc_registry()))
+    pool_k         = min(num_docs * 5, 80)            # retrieve a wide pool
+    chunks_per_src = max(2, MAX_MULTI_DOC_CHUNKS // num_docs)  # balance per source
+    candidates     = vectorstore.similarity_search(question, k=pool_k)
     by_source: dict = {}
     for doc in candidates:
         src = os.path.basename(doc.metadata.get("source", "unknown"))
         if src not in by_source:
             by_source[src] = []
-        if len(by_source[src]) < 3:
+        if len(by_source[src]) < chunks_per_src:
             by_source[src].append(doc)
 
     context_parts: list = []
@@ -533,6 +553,7 @@ def _answer_multi_doc(question: str, session_id: str):
 def _get_or_create_chain(session_id: str) -> ConversationalRetrievalChain:
     """Return the existing chain for session_id, or create a new one."""
     session = conversation_sessions.setdefault(session_id, {})
+    session["last_accessed"] = time.monotonic()
     if "chain" not in session:
         memory = ConversationBufferMemory(
             memory_key="chat_history",
@@ -570,6 +591,9 @@ def chat():
 
         if not message:
             return jsonify({"error": "Message cannot be empty"}), 400
+
+        # Evict idle sessions to prevent unbounded memory growth
+        _evict_stale_sessions()
 
         # Lazy-init vector store
         if vectorstore is None:
