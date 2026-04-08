@@ -86,12 +86,20 @@ in the context.
 7. Your answer should read like a direct summary of the chunks below, \
 NOT like an essay.
 
+FORMATTING RULES (always apply):
+- Use **bold** to highlight key terms, names, model numbers, or critical warnings.
+- Use bullet points or numbered lists whenever presenting multiple items, steps, or options.
+- Use numbered steps for sequential procedures (e.g. startup, shutdown, inspection).
+- Use short paragraphs — avoid walls of text.
+- If the answer has clearly distinct sections, add a short **bold** heading for each.
+- Keep formatting clean and readable — do not over-format simple one-line answers.
+
 Retrieved Context:
 {context}
 
 Question: {question}
 
-Answer (extract/summarize ONLY from context above):"""
+Answer (extract/summarize ONLY from context above, applying formatting rules):"""
 
 _CONDENSE_TEMPLATE = """Given the following conversation and a follow up question, \
 rephrase the follow up question to be a standalone question ONLY IF truly needed.
@@ -123,12 +131,20 @@ RULES:
 3. If documents differ or conflict on a point, say so explicitly.
 4. If the context is insufficient → say "The uploaded documents do not contain enough information about this."
 
+FORMATTING RULES (always apply):
+- Use **bold** to highlight key terms, names, model numbers, or critical warnings.
+- Use bullet points or numbered lists whenever presenting multiple items, steps, or options.
+- Use numbered steps for sequential procedures (e.g. startup, shutdown, inspection).
+- Group information by document or topic using short **bold** headings where it aids clarity.
+- Use short paragraphs — avoid walls of text.
+- Keep formatting clean and readable — do not over-format simple one-line answers.
+
 Retrieved Context (grouped by source):
 {context}
 
 Question: {question}
 
-Answer (synthesize from context above, citing sources):"""
+Answer (synthesize from context above, citing sources, applying formatting rules):"""
 
 # ── Off-topic guard ───────────────────────────────────────────────────────────
 _GUARD_PROMPT = (
