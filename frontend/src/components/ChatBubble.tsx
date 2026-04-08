@@ -6,16 +6,20 @@
 "use client";
 
 import { useState } from "react";
-import type { Message, Source } from "@/lib/types";
+import type { Message, Source, Clarification } from "@/lib/types";
 
 // ─── AI Assistant Bubble ────────────────────────────────────────────────────
 
 export function AssistantBubble({
   content,
   sources,
+  clarification,
+  onOptionSelect,
 }: {
   content: string;
   sources?: Source[];
+  clarification?: Clarification;
+  onOptionSelect?: (label: string) => void;
 }) {
   const [showSources, setShowSources] = useState(false);
   const hasSources = sources && sources.length > 0;
@@ -39,6 +43,19 @@ export function AssistantBubble({
           <p className="text-[#2d3748] text-sm leading-relaxed whitespace-pre-wrap">
             {content}
           </p>
+          {clarification && onOptionSelect && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {clarification.options.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => onOptionSelect(opt.label)}
+                  className="rounded-full border border-purple-300 px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 transition-colors"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Source toggle */}
@@ -108,9 +125,9 @@ export function UserBubble({ content }: { content: string }) {
 
 // ─── Generic ChatBubble dispatcher ──────────────────────────────────────────
 
-export function ChatBubble({ message }: { message: Message }) {
+export function ChatBubble({ message, onOptionSelect }: { message: Message; onOptionSelect?: (label: string) => void }) {
   if (message.role === "assistant") {
-    return <AssistantBubble content={message.content} sources={message.sources} />;
+    return <AssistantBubble content={message.content} sources={message.sources} clarification={message.clarification} onOptionSelect={onOptionSelect} />;
   }
   return <UserBubble content={message.content} />;
 }

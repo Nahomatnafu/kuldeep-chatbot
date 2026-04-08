@@ -46,7 +46,7 @@ export default function ChatPage({ messages, onSend, isLoading }: ChatPageProps)
           {/* Messages */}
           <div className="flex flex-col gap-4">
             {messages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg} />
+              <ChatBubble key={msg.id} message={msg} onOptionSelect={onSend} />
             ))}
 
             {/* Typing indicator */}

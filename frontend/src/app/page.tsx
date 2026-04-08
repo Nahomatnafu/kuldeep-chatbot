@@ -41,8 +41,8 @@ export default function Home() {
         role: "assistant",
         content: response.reply,
         timestamp: new Date().toISOString(),
-        // Attach RAG source references so ChatBubble can display them
         sources: response.metadata?.sources,
+        clarification: response.metadata?.clarification,
       };
 
       setMessages((prev) => [...prev, aiMessage]);

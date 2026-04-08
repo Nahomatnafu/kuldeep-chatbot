@@ -8,6 +8,8 @@ export interface Message {
   timestamp?: string;
   /** Source references returned by the RAG backend (assistant messages only) */
   sources?: Source[];
+  /** Clarification prompt when the query was ambiguous (assistant messages only) */
+  clarification?: Clarification;
 }
 
 // ── Source reference (from Nahom's chunk metadata format) ───────────────────
@@ -17,6 +19,16 @@ export interface Source {
   file: string;
   page: number;       // 1-indexed
   snippet: string;
+}
+
+export interface ClarificationOption {
+  label: string;   // human-readable, e.g. "SOP-001 Assembly Line Startup"
+  value: string;   // filename or "__all__"
+}
+
+export interface Clarification {
+  question: string;
+  options: ClarificationOption[];
 }
 
 // ── Request / Response shapes sent to/from the Flask backend ────────────────
@@ -42,6 +54,7 @@ export interface ChatResponse {
   /** Metadata including source references */
   metadata?: {
     sources?: Source[];
+    clarification?: Clarification;
     [key: string]: unknown;
   };
 }

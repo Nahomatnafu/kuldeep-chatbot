@@ -77,26 +77,36 @@ if ($InstallDeps) {
 
 $condaNoPluginsCmd = "`$env:CONDA_NO_PLUGINS='true'; "
 
+$pidsFile = Join-Path $rootPath ".dev-pids"
+$spawnedPids = @()
+
 if (-not $NoBackend) {
     $backendCommand = "${condaNoPluginsCmd}Set-Location '$rootPath'; ${backendInstallCmd}& '$venvPython' '$backendRun'"
-    Start-Process powershell -WorkingDirectory $rootPath -ArgumentList @(
+    $proc = Start-Process powershell -WorkingDirectory $rootPath -ArgumentList @(
         "-NoProfile",
         "-NoExit",
         "-ExecutionPolicy", "Bypass",
         "-Command", $backendCommand
-    ) | Out-Null
-    Write-Host "Backend terminal started."
+    ) -PassThru
+    $spawnedPids += $proc.Id
+    Write-Host "Backend terminal started (PID $($proc.Id))."
 }
 
 if (-not $NoFrontend) {
     $frontendCommand = "${condaNoPluginsCmd}${frontendInstallCmd}Set-Location '$frontendPath'; npm run dev"
-    Start-Process powershell -WorkingDirectory $frontendPath -ArgumentList @(
+    $proc = Start-Process powershell -WorkingDirectory $frontendPath -ArgumentList @(
         "-NoProfile",
         "-NoExit",
         "-ExecutionPolicy", "Bypass",
         "-Command", $frontendCommand
-    ) | Out-Null
-    Write-Host "Frontend terminal started."
+    ) -PassThru
+    $spawnedPids += $proc.Id
+    Write-Host "Frontend terminal started (PID $($proc.Id))."
+}
+
+if ($spawnedPids.Count -gt 0) {
+    $spawnedPids -join "`n" | Set-Content -Path $pidsFile
 }
 
 Write-Host "Done. Open http://localhost:3000 once both servers are ready."
+Write-Host "Run .\stop-dev.ps1 to shut everything down cleanly."

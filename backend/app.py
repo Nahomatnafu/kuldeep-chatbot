@@ -51,6 +51,10 @@ CHUNK_SIZE         = 1000
 CHUNK_OVERLAP      = 200
 MAX_UPLOAD_MB      = 32
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"}
+BROAD_INTENT_PHRASES = {
+    "all documents", "all docs", "across all", "across documents", "from all",
+    "compare", "consolidate", "summarize all", "all relevant", "every document",
+}
 
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
@@ -109,6 +113,22 @@ Standalone question:"""
 
 QA_PROMPT       = PromptTemplate(template=_QA_TEMPLATE,       input_variables=["context", "question"])
 CONDENSE_PROMPT = PromptTemplate(template=_CONDENSE_TEMPLATE, input_variables=["chat_history", "question"])
+
+_MULTI_DOC_QA_TEMPLATE = """\
+You are a careful research assistant synthesizing information from multiple documents.
+
+RULES:
+1. Answer ONLY from the source chunks provided below — do NOT add external knowledge.
+2. Cite which document each point comes from using [Source: filename].
+3. If documents differ or conflict on a point, say so explicitly.
+4. If the context is insufficient → say "The uploaded documents do not contain enough information about this."
+
+Retrieved Context (grouped by source):
+{context}
+
+Question: {question}
+
+Answer (synthesize from context above, citing sources):"""
 
 # ── Off-topic guard ───────────────────────────────────────────────────────────
 _GUARD_PROMPT = (
@@ -246,10 +266,201 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
         return False, f"Ingestion error: {exc}", 0
 
 
+# ── Scope detection ──────────────────────────────────────────────────────────
+
+_SCOPE_CANDIDATE_K      = 12
+_SCORE_COMPETITION_GAP  = 0.35  # L2 distance margin — sources within this gap of the
+                                # top chunk are considered genuinely competitive
+_MIN_RELEVANCE_SCORE    = 0.50  # Skip clarification entirely if the best chunk is
+                                # worse than this — no doc truly contains the answer
+
+
+def _display_name(filename: str) -> str:
+    """'SOP-001-Assembly-Line-Startup.txt' → 'SOP-001 Assembly Line Startup'"""
+    return Path(filename).stem.replace("-", " ").replace("_", " ")
+
+
+def _build_clarification_options(sources: list) -> list:
+    options = [{"label": _display_name(s), "value": s} for s in sources]
+    options.append({"label": "All relevant documents", "value": "__all__"})
+    return options
+
+
+def _build_clarification_question(sources: list) -> str:
+    names = [f'"{_display_name(s)}"' for s in sources[:3]]
+    more  = f" (and {len(sources) - 3} more)" if len(sources) > 3 else ""
+    if len(names) == 1:
+        doc_list = names[0]
+    elif len(names) == 2:
+        doc_list = f"{names[0]} and {names[1]}"
+    else:
+        doc_list = f"{names[0]}, {names[1]}, and {names[2]}"
+    return (
+        f"I found relevant content in multiple documents: {doc_list}{more}. "
+        f"Which one are you asking about, or would you like me to check all relevant documents?"
+    )
+
+
+def _detect_scope(message: str, session_id: str) -> tuple:
+    """
+    Determine retrieval scope. Returns (scope, data):
+      ("pass",            None)             — proceed with full chain as-is
+      ("broad",           None)             — explicit multi-doc synthesis
+      ("ambiguous",       [filenames])      — multiple docs match, needs clarification
+      ("resolved_single", (file, orig_q))  — clarification resolved to one doc
+      ("resolved_all",    orig_q)          — clarification resolved to all docs
+    """
+    msg_lower = message.lower().strip()
+    session   = conversation_sessions.get(session_id, {})
+    pending   = session.get("pending_clarification")
+
+    # 1 — Resolve a pending clarification
+    if pending:
+        for opt in pending["options"]:
+            if message.strip().lower() == opt["label"].lower():
+                session["pending_clarification"] = None
+                orig = pending["original_question"]
+                if opt["value"] == "__all__":
+                    return ("resolved_all", orig)
+                return ("resolved_single", (opt["value"], orig))
+        # User asked something new — clear pending and fall through
+        session["pending_clarification"] = None
+
+    # 2 — Explicit broad intent
+    if any(phrase in msg_lower for phrase in BROAD_INTENT_PHRASES):
+        return ("broad", None)
+
+    # 3 — Candidate retrieval + score-based competition check
+    candidates = vectorstore.similarity_search_with_score(message, k=_SCOPE_CANDIDATE_K)
+    if not candidates:
+        return ("pass", None)
+
+    # Track best (lowest L2) score and chunk list per source
+    best_score:  dict = {}
+    by_source:   dict = {}
+    for doc, score in candidates:
+        src = os.path.basename(doc.metadata.get("source", "unknown"))
+        by_source.setdefault(src, []).append(doc)
+        if src not in best_score or score < best_score[src]:
+            best_score[src] = score
+
+    if len(by_source) <= 1:
+        return ("pass", None)
+
+    # If user explicitly named a document, skip clarification
+    for src in by_source:
+        stem = Path(src).stem.lower()
+        if stem in msg_lower or stem.replace("-", " ") in msg_lower or stem.replace("_", " ") in msg_lower:
+            return ("pass", None)
+
+    # Sources whose best chunk is close to the overall best chunk are genuine competitors
+    top_score    = min(best_score.values())
+
+    # If even the best match is a poor semantic fit, skip clarification — no doc
+    # truly contains the answer so disambiguation wouldn’t help.
+    if top_score >= _MIN_RELEVANCE_SCORE:
+        return ("pass", None)
+
+    competitive  = [s for s, sc in best_score.items() if sc <= top_score + _SCORE_COMPETITION_GAP]
+
+    if len(competitive) >= 2:
+        ranked = sorted(competitive, key=lambda s: best_score[s])
+        return ("ambiguous", ranked)
+
+    return ("pass", None)
+
+
+def _answer_single_doc(question: str, filename: str, session_id: str):
+    """Retrieve chunks, keep only those from `filename`, answer with the strict QA prompt."""
+    # Fetch a generous candidate pool then filter — FAISS has no metadata filter API
+    candidates = vectorstore.similarity_search(question, k=20)
+    doc_chunks  = [
+        doc for doc in candidates
+        if os.path.basename(doc.metadata.get("source", "")) == filename
+    ]
+
+    if not doc_chunks:
+        return jsonify({
+            "reply":      f'The document "{_display_name(filename)}" does not appear to contain information about this.',
+            "session_id": session_id,
+            "metadata":   {"sources": []},
+        })
+
+    context = "\n\n".join(doc.page_content for doc in doc_chunks)
+    result  = llm.invoke(QA_PROMPT.format(context=context, question=question))
+
+    sources = []
+    for i, doc in enumerate(doc_chunks, 1):
+        src     = doc.metadata.get("source", "Unknown")
+        page    = doc.metadata.get("page", 0)
+        snippet = doc.page_content[:150].replace("\n", " ")
+        if len(doc.page_content) > 150:
+            snippet += "..."
+        sources.append({
+            "id":      i,
+            "file":    os.path.basename(src),
+            "page":    page + 1,
+            "snippet": snippet,
+        })
+
+    return jsonify({
+        "reply":      result.content,
+        "session_id": session_id,
+        "metadata":   {"sources": sources},
+    })
+
+
+def _answer_multi_doc(question: str, session_id: str):
+    """Retrieve chunks balanced across sources and synthesize with multi-doc prompt."""
+    candidates = vectorstore.similarity_search(question, k=15)
+    by_source: dict = {}
+    for doc in candidates:
+        src = os.path.basename(doc.metadata.get("source", "unknown"))
+        if src not in by_source:
+            by_source[src] = []
+        if len(by_source[src]) < 3:
+            by_source[src].append(doc)
+
+    context_parts: list = []
+    all_chunks:    list = []
+    for src, chunks in by_source.items():
+        context_parts.append(f"[Source: {src}]")
+        for chunk in chunks:
+            context_parts.append(chunk.page_content)
+            all_chunks.append(chunk)
+        context_parts.append("")
+
+    result = llm.invoke(_MULTI_DOC_QA_TEMPLATE.format(
+        context="\n".join(context_parts),
+        question=question,
+    ))
+
+    sources = []
+    for i, doc in enumerate(all_chunks, 1):
+        src     = doc.metadata.get("source", "Unknown")
+        page    = doc.metadata.get("page", 0)
+        snippet = doc.page_content[:150].replace("\n", " ")
+        if len(doc.page_content) > 150:
+            snippet += "..."
+        sources.append({
+            "id":      i,
+            "file":    os.path.basename(src),
+            "page":    page + 1,
+            "snippet": snippet,
+        })
+
+    return jsonify({
+        "reply":      result.content,
+        "session_id": session_id,
+        "metadata":   {"sources": sources},
+    })
+
+
 # ── Helper: per-session conversational chain ─────────────────────────────────
 def _get_or_create_chain(session_id: str) -> ConversationalRetrievalChain:
     """Return the existing chain for session_id, or create a new one."""
-    if session_id not in conversation_sessions:
+    session = conversation_sessions.setdefault(session_id, {})
+    if "chain" not in session:
         memory = ConversationBufferMemory(
             memory_key="chat_history",
             return_messages=True,
@@ -263,8 +474,9 @@ def _get_or_create_chain(session_id: str) -> ConversationalRetrievalChain:
             condense_question_prompt=CONDENSE_PROMPT,
             combine_docs_chain_kwargs={"prompt": QA_PROMPT},
         )
-        conversation_sessions[session_id] = {"chain": chain, "memory": memory}
-    return conversation_sessions[session_id]["chain"]
+        session["chain"]  = chain
+        session["memory"] = memory
+    return session["chain"]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -300,6 +512,33 @@ def chat():
                 "metadata":   {"sources": []},
             })
 
+        # ── Scope detection ──────────────────────────────────────────────────────
+        scope, scope_data = _detect_scope(message, session_id)
+
+        if scope == "ambiguous":
+            options  = _build_clarification_options(scope_data)
+            question = _build_clarification_question(scope_data)
+            conversation_sessions.setdefault(session_id, {})["pending_clarification"] = {
+                "original_question": message,
+                "options":           options,
+            }
+            return jsonify({
+                "reply":      question,
+                "session_id": session_id,
+                "metadata":   {
+                    "sources":       [],
+                    "clarification": {"question": question, "options": options},
+                },
+            })
+
+        if scope in ("broad", "resolved_all"):
+            return _answer_multi_doc(scope_data if scope == "resolved_all" else message, session_id)
+
+        if scope == "resolved_single":
+            filename, original_q = scope_data
+            return _answer_single_doc(original_q, filename, session_id)
+
+        # ── Default: full conversational chain ──────────────────────────────────────
         chain  = _get_or_create_chain(session_id)
         result = chain.invoke({"question": message})
 
