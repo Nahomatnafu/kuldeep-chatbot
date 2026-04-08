@@ -16,10 +16,16 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const animFrameRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      cancelAnimationFrame(animFrameRef.current);
+      audioCtxRef.current?.close();
     };
   }, []);
 
@@ -52,6 +58,71 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
     setIsRecording(false);
   };
 
+  const startVisualizer = (stream: MediaStream) => {
+    const audioCtx = new AudioContext();
+    audioCtxRef.current = audioCtx;
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256; // 128 frequency bins
+    analyserRef.current = analyser;
+    audioCtx.createMediaStreamSource(stream).connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    const draw = () => {
+      animFrameRef.current = requestAnimationFrame(draw);
+      const canvas = canvasRef.current;
+      if (!canvas || !canvas.offsetWidth) return;
+
+      // Keep canvas resolution in sync with its CSS display size
+      if (canvas.width !== canvas.offsetWidth) {
+        canvas.width = canvas.offsetWidth;
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      analyser.getByteFrequencyData(dataArray);
+
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const barCount = 64;
+      const gap = 1;
+      const barW = Math.max(1.5, (W - gap * (barCount - 1)) / barCount);
+      // Only sample the lower 60 % of bins — speech energy lives there;
+      // the top 40 % of high-freq bins are almost always silent.
+      const usableBins = Math.floor(dataArray.length * 0.6);
+
+      for (let i = 0; i < barCount; i++) {
+        const idx = Math.floor((i / barCount) * usableBins);
+        const amplitude = dataArray[idx] / 255;
+        const barH = Math.max(3, amplitude * H * 0.85);
+        const x = i * (barW + gap);
+        const y = (H - barH) / 2;
+        const alpha = 0.35 + amplitude * 0.65;
+        ctx.fillStyle = `rgba(59,130,246,${alpha.toFixed(2)})`;
+        ctx.fillRect(x, y, barW, barH);
+      }
+    };
+
+    draw();
+  };
+
+  const stopVisualizer = () => {
+    cancelAnimationFrame(animFrameRef.current);
+    analyserRef.current = null;
+    audioCtxRef.current?.close();
+    audioCtxRef.current = null;
+
+    // Clear the canvas
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
   const startRecorder = async () => {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       window.alert("Voice input is not supported in this browser.");
@@ -80,6 +151,8 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
       };
 
       recorder.onstop = async () => {
+        stopVisualizer();
+
         const audioBlob = new Blob(chunksRef.current, {
           type: recorder.mimeType || "audio/webm",
         });
@@ -105,6 +178,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
 
       recorder.start();
       setIsRecording(true);
+      startVisualizer(stream);
     } catch (err) {
       console.error("[voice] microphone access failed:", err);
       window.alert("Microphone access was denied or unavailable.");
@@ -137,19 +211,30 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
         <PaperclipIcon className="w-5 h-5" />
       </button>
 
-      {/* Text input */}
-      <textarea
-        ref={textareaRef}
-        rows={1}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onInput={handleInput}
-        placeholder={isTranscribing ? "Transcribing audio..." : "Ask Kuldeep about manuals, SOPs, or processes..."}
-        disabled={disabled || isTranscribing}
-        className="flex-1 resize-none bg-transparent text-[#374151] placeholder-gray-400 text-sm leading-relaxed focus:outline-none"
-        style={{ minHeight: "24px", maxHeight: "160px" }}
-      />
+      {/* Text input / Audio visualizer */}
+      <div className="flex-1" style={{ minHeight: "24px" }}>
+        <textarea
+          ref={textareaRef}
+          rows={1}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onInput={handleInput}
+          placeholder={isTranscribing ? "Transcribing audio..." : "Ask Kuldeep about manuals, SOPs, or processes..."}
+          disabled={disabled || isTranscribing}
+          className="w-full resize-none bg-transparent text-[#374151] placeholder-gray-400 text-sm leading-relaxed focus:outline-none"
+          style={{ minHeight: "24px", maxHeight: "160px", display: isRecording ? "none" : undefined }}
+        />
+        {/* Canvas is always mounted so canvasRef is always set; shown only while recording */}
+        <canvas
+          ref={canvasRef}
+          style={{
+            display: isRecording ? "block" : "none",
+            width: "100%",
+            height: "32px",
+          }}
+        />
+      </div>
 
       {/* Mic icon */}
       <button

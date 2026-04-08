@@ -273,6 +273,30 @@ _SCORE_COMPETITION_GAP  = 0.35  # L2 distance margin — sources within this gap
                                 # top chunk are considered genuinely competitive
 _MIN_RELEVANCE_SCORE    = 0.50  # Skip clarification entirely if the best chunk is
                                 # worse than this — no doc truly contains the answer
+_DOMINANCE_RATIO        = 0.25  # If (runner-up - top) / top >= this ratio the top doc
+                                # is dominant enough to skip clarification
+
+# Words that occur in many filenames and carry no distinguishing meaning.
+# Used by _extract_distinctive_keywords to avoid matching on 'manual', 'procedure', etc.
+_FILENAME_STOP_WORDS = {
+    "sop", "manual", "operation", "operations", "operator", "procedure",
+    "schedule", "log", "inspection", "report", "document", "documents",
+    "guide", "guidelines", "instruction", "instructions", "basic", "ref",
+    "reference", "overview", "pdf", "doc", "txt", "md", "csv", "tsv",
+    "html", "htm", "json", "docx",
+}
+
+
+def _extract_distinctive_keywords(filename: str) -> set:
+    """Pull meaningful words from a filename, dropping generic filler.
+
+    Example: 'Forklift_Operation_Manual.pdf' → {'forklift'}
+    """
+    stem  = Path(filename).stem.lower()
+    words = set(stem.replace("-", " ").replace("_", " ").split())
+    # drop pure numbers (e.g. '001', '002', '2025')
+    words = {w for w in words if not w.isdigit()}
+    return words - _FILENAME_STOP_WORDS
 
 
 def _display_name(filename: str) -> str:
@@ -347,20 +371,53 @@ def _detect_scope(message: str, session_id: str) -> tuple:
     if len(by_source) <= 1:
         return ("pass", None)
 
-    # If user explicitly named a document, skip clarification
+    top_score = min(best_score.values())
+
+    # If user explicitly named a document (full stem), skip clarification
     for src in by_source:
         stem = Path(src).stem.lower()
         if stem in msg_lower or stem.replace("-", " ") in msg_lower or stem.replace("_", " ") in msg_lower:
             return ("pass", None)
 
-    # Sources whose best chunk is close to the overall best chunk are genuine competitors
-    top_score    = min(best_score.values())
+    # Partial keyword match — if a distinctive word from exactly one filename
+    # appears in the query AND that document is the best (or near-best) scorer
+    # AND that keyword doesn't appear in the retrieved chunks of other sources
+    # (which would mean it's a generic cross-cutting term, not a distinctive
+    # entity name like "forklift" or "HPM100").
+    msg_words = set(msg_lower.split())
+    keyword_matches: dict = {}          # src → set of matched keywords
+    for src in by_source:
+        keywords = _extract_distinctive_keywords(src)
+        overlap  = keywords & msg_words
+        if overlap:
+            keyword_matches[src] = overlap
+    if len(keyword_matches) == 1:
+        matched_src   = next(iter(keyword_matches))
+        matched_score = best_score[matched_src]
+        matched_kw    = keyword_matches[matched_src]
+        # Verify the keyword is truly distinctive: it should NOT appear in the
+        # retrieved text of other competing sources.  If it does, the term is a
+        # generic topic many docs share and shouldn't shortcut the decision.
+        other_text = " ".join(
+            doc.page_content.lower()
+            for src2, docs in by_source.items() if src2 != matched_src
+            for doc in docs
+        )
+        kw_in_others = any(kw in other_text for kw in matched_kw)
+        if not kw_in_others and matched_score <= top_score + 0.05:
+            return ("pass", None)
 
     # If even the best match is a poor semantic fit, skip clarification — no doc
     # truly contains the answer so disambiguation wouldn’t help.
     if top_score >= _MIN_RELEVANCE_SCORE:
         return ("pass", None)
-
+    # Dominance check — if the top doc's score is substantially better than the
+    # runner-up (by ratio), one doc clearly owns this query.
+    sorted_scores = sorted(best_score.values())
+    if len(sorted_scores) >= 2 and top_score > 0:
+        runner_up = sorted_scores[1]
+        if (runner_up - top_score) / top_score >= _DOMINANCE_RATIO:
+            return ("pass", None)
     competitive  = [s for s, sc in best_score.items() if sc <= top_score + _SCORE_COMPETITION_GAP]
 
     if len(competitive) >= 2:
