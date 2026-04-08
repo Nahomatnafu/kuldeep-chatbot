@@ -63,7 +63,14 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
       streamRef.current = stream;
       chunksRef.current = [];
 
-      const recorder = new MediaRecorder(stream);
+      let recorder: MediaRecorder;
+      try {
+        recorder = new MediaRecorder(stream);
+      } catch (recorderErr) {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        throw recorderErr;
+      }
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (event) => {

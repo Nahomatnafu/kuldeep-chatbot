@@ -31,6 +31,9 @@ frontend/.next/
 frontend/out/
 frontend/.turbo/
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # OS
 .DS_Store
 Thumbs.db

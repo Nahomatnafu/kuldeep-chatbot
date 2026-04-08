@@ -10,11 +10,14 @@ $rootPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backendRun = Join-Path $rootPath "backend\run.py"
 $backendReq = Join-Path $rootPath "backend\requirements.txt"
 $frontendPath = Join-Path $rootPath "frontend"
-$venvPython = Join-Path $rootPath "venv\Scripts\python.exe"
+$venvPython = Join-Path $rootPath "backend\venv\Scripts\python.exe"
+if (-not (Test-Path $venvPython)) {
+    $venvPython = Join-Path $rootPath "venv\Scripts\python.exe"
+}
 $dotenvPath = Join-Path $rootPath ".env"
 
 if (-not (Test-Path $venvPython)) {
-    throw "Python venv executable not found at $venvPython"
+    throw "Python venv executable not found. Expected at 'backend\venv\Scripts\python.exe' or 'venv\Scripts\python.exe'."
 }
 
 if (-not (Test-Path $backendRun)) {
