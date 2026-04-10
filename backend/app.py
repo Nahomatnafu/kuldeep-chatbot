@@ -43,7 +43,7 @@ KNOWLEDGE_BASE_DIR = Path("knowledge_base")
 CHROMA_DB_DIR      = "chroma_db"
 DOCUMENTS_JSON     = Path("knowledge_base/documents.json")
 MODEL_NAME         = "gpt-3.5-turbo"
-NUM_CHUNKS         = 6          # k=6 for higher recall
+NUM_CHUNKS         = 12         # k=12 for broader recall on dense technical documents
 CHUNK_SIZE         = 1000
 CHUNK_OVERLAP      = 200
 MAX_UPLOAD_MB      = 32
