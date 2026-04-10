@@ -49,10 +49,7 @@ export default function Home() {
     } catch (err) {
       console.error("[chat] API call failed:", err);
 
-      const errorContent =
-        err instanceof Error
-          ? err.message
-          : "Sorry, something went wrong. Please try again.";
+      const errorContent = "Sorry, I couldn't reach the assistant. Please check that the backend is running and try again.";
 
       setMessages((prev) => [
         ...prev,
