@@ -364,6 +364,13 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
   );
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function getExt(filename: string): string {
+  const idx = filename.lastIndexOf(".");
+  return idx === -1 ? "" : filename.slice(idx).toLowerCase();
+}
+
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 function XIcon({ className }: { className?: string }) {
