@@ -1,3 +1,7 @@
+"use client";
+
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+
 // Header component matching Figma design
 // Blue header (#3B82F6) with robot icon on left, "Kuldeep" brand text on right,
 // and a document-management button to open the knowledge-base sidebar.
@@ -29,13 +33,41 @@ export default function Header({ onDocsClick }: HeaderProps) {
         )}
       </div>
 
-      {/* Right: Brand name */}
-      <span
-        className="text-white text-2xl tracking-widest select-none"
-        style={{ fontFamily: "var(--font-cinzel), serif", fontWeight: 500 }}
-      >
-        Kuldeep
-      </span>
+      {/* Right: Brand name + Clerk auth controls */}
+      <div className="flex items-center gap-3">
+        <span
+          className="text-white text-2xl tracking-widest select-none"
+          style={{ fontFamily: "var(--font-cinzel), serif", fontWeight: 500 }}
+        >
+          Kuldeep
+        </span>
+
+        <Show when="signed-out">
+          <div className="flex items-center gap-2">
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="rounded-lg border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
+              >
+                Sign in
+              </button>
+            </SignInButton>
+
+            <SignUpButton mode="modal">
+              <button
+                type="button"
+                className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-[#3B82F6] transition-colors hover:bg-white/90"
+              >
+                Sign up
+              </button>
+            </SignUpButton>
+          </div>
+        </Show>
+
+        <Show when="signed-in">
+          <UserButton />
+        </Show>
+      </div>
     </header>
   );
 }

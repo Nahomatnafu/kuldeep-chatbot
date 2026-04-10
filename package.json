@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "flash": "^1.1.0",
+    "flask": "^0.2.10"
+  }
+}

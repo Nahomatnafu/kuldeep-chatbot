@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
 
@@ -31,7 +32,7 @@ export default function RootLayout({
         className={`${inter.variable} ${cinzel.variable} antialiased`}
         style={{ fontFamily: "var(--font-inter), sans-serif" }}
       >
-        {children}
+        <ClerkProvider>{children}</ClerkProvider>
       </body>
     </html>
   );
