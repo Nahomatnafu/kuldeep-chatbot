@@ -41,18 +41,15 @@ export default function Home() {
         role: "assistant",
         content: response.reply,
         timestamp: new Date().toISOString(),
-        // Attach RAG source references so ChatBubble can display them
         sources: response.metadata?.sources,
+        clarification: response.metadata?.clarification,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       console.error("[chat] API call failed:", err);
 
-      const errorContent =
-        err instanceof Error
-          ? err.message
-          : "Sorry, something went wrong. Please try again.";
+      const errorContent = "Sorry, I couldn't reach the assistant. Please check that the backend is running and try again.";
 
       setMessages((prev) => [
         ...prev,

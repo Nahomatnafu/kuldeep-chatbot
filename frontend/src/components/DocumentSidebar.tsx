@@ -14,6 +14,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Document } from "@/lib/types";
 import { listDocuments, uploadDocument, deleteDocument } from "@/lib/documentApi";
 
+const ALLOWED_EXT = new Set([".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"]);
+
 interface DocumentSidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,10 +49,6 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
   useEffect(() => {
     if (isOpen) fetchDocuments();
   }, [isOpen, fetchDocuments]);
-
-  const ALLOWED_EXT = new Set([".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"]);
-
-  const getExt = (name: string) => `.${name.split(".").pop()?.toLowerCase() ?? ""}`;
 
   const handleUpload = async (file: File) => {
     if (!ALLOWED_EXT.has(getExt(file.name))) {

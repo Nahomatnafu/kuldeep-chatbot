@@ -15,6 +15,7 @@ env/
 .env
 .env.local
 .env.*.local
+.dev-pids
 
 # Vector databases (large binary files — rebuilt locally from PDFs)
 backend/chroma_db/

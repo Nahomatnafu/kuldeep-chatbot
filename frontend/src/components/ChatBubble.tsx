@@ -6,16 +6,22 @@
 "use client";
 
 import { useState } from "react";
-import type { Message, Source } from "@/lib/types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { Message, Source, Clarification } from "@/lib/types";
 
 // ─── AI Assistant Bubble ────────────────────────────────────────────────────
 
 export function AssistantBubble({
   content,
   sources,
+  clarification,
+  onOptionSelect,
 }: {
   content: string;
   sources?: Source[];
+  clarification?: Clarification;
+  onOptionSelect?: (label: string) => void;
 }) {
   const [showSources, setShowSources] = useState(false);
   const hasSources = sources && sources.length > 0;
@@ -36,9 +42,38 @@ export function AssistantBubble({
           className="rounded-2xl rounded-tl-sm bg-white px-5 py-4 shadow-sm"
           style={{ border: "1px solid #e5e7eb" }}
         >
-          <p className="text-[#2d3748] text-sm leading-relaxed whitespace-pre-wrap">
-            {content}
-          </p>
+          <div className="text-[#2d3748] text-sm leading-relaxed">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ children }) => <p className="my-1 leading-relaxed">{children}</p>,
+                strong: ({ children }) => <strong className="font-semibold text-[#1a202c]">{children}</strong>,
+                ul: ({ children }) => <ul className="my-1 pl-5 list-disc space-y-0.5">{children}</ul>,
+                ol: ({ children }) => <ol className="my-1 pl-5 list-decimal space-y-0.5">{children}</ol>,
+                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                h1: ({ children }) => <h1 className="font-semibold text-[#1a202c] mt-3 mb-1 text-base">{children}</h1>,
+                h2: ({ children }) => <h2 className="font-semibold text-[#1a202c] mt-3 mb-1 text-sm">{children}</h2>,
+                h3: ({ children }) => <h3 className="font-semibold text-[#1a202c] mt-2 mb-1 text-sm">{children}</h3>,
+                code: ({ children }) => <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
+                blockquote: ({ children }) => <blockquote className="border-l-2 border-gray-300 pl-3 my-1 text-gray-600 italic">{children}</blockquote>,
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          </div>
+          {clarification && onOptionSelect && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {clarification.options.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => onOptionSelect(opt.label)}
+                  className="rounded-full border border-purple-300 px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 transition-colors"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Source toggle */}
@@ -108,9 +143,9 @@ export function UserBubble({ content }: { content: string }) {
 
 // ─── Generic ChatBubble dispatcher ──────────────────────────────────────────
 
-export function ChatBubble({ message }: { message: Message }) {
+export function ChatBubble({ message, onOptionSelect }: { message: Message; onOptionSelect?: (label: string) => void }) {
   if (message.role === "assistant") {
-    return <AssistantBubble content={message.content} sources={message.sources} />;
+    return <AssistantBubble content={message.content} sources={message.sources} clarification={message.clarification} onOptionSelect={onOptionSelect} />;
   }
   return <UserBubble content={message.content} />;
 }

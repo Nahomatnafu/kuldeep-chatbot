@@ -1,6 +1,8 @@
 // WelcomePage — shown when there are no messages yet (Figma node 49-223)
 // Centered robot avatar + heading + subtitle + floating input box
 
+"use client";
+
 import ChatInput from "./ChatInput";
 
 interface WelcomePageProps {
