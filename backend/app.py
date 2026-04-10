@@ -14,6 +14,7 @@ GET    /api/health                   — Health check
 """
 
 import os
+import re
 import csv
 import json
 import time
@@ -98,7 +99,11 @@ Retrieved Context:
 
 Question: {question}
 
-Answer (extract/summarize ONLY from context above, applying formatting rules):"""
+Answer (extract/summarize ONLY from context above, applying formatting rules):
+
+After your answer, on a separate line write exactly:
+SOURCES_USED: followed by comma-separated chunk numbers you drew from (e.g. SOURCES_USED: 1, 3, 5).
+If you used none of the chunks, write: SOURCES_USED: none"""
 
 _CONDENSE_TEMPLATE = """Given the following conversation and a follow up question, \
 rephrase the follow up question to be a standalone question ONLY IF truly needed.
@@ -143,7 +148,11 @@ Retrieved Context (grouped by source):
 
 Question: {question}
 
-Answer (synthesize from context above, citing sources, applying formatting rules):"""
+Answer (synthesize from context above, citing sources, applying formatting rules):
+
+After your answer, on a separate line write exactly:
+SOURCES_USED: followed by comma-separated chunk numbers you drew from (e.g. SOURCES_USED: 2, 4).
+If you used none of the chunks, write: SOURCES_USED: none"""
 
 # ── Off-topic guard ───────────────────────────────────────────────────────────
 _GUARD_PROMPT = (
@@ -281,6 +290,37 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
 
 
 # ── ChromaDB similarity search helpers ────────────────────────────────────────
+def _build_numbered_context(chunks: list) -> str:
+    """Format chunks as numbered sections so the LLM can cite which ones it used."""
+    return "\n\n".join(f"[CHUNK {i}]\n{c.page_content}" for i, c in enumerate(chunks, 1))
+
+
+def _parse_citations(raw_answer: str, chunks: list) -> tuple:
+    """Parse SOURCES_USED line from answer. Returns (clean_answer, cited_chunks).
+    Falls back to all chunks if the LLM omits the citation line.
+    """
+    match = re.search(r'\s*SOURCES_USED:\s*(.+?)\s*$', raw_answer, re.IGNORECASE | re.MULTILINE)
+    if not match:
+        return raw_answer.strip(), chunks
+
+    clean_answer = raw_answer[:match.start()].strip()
+    cited_str    = match.group(1).strip()
+
+    if cited_str.lower() == "none" or not cited_str:
+        return clean_answer, []
+
+    cited_chunks = []
+    for part in cited_str.split(","):
+        m = re.search(r'\d+', part.strip())
+        if m:
+            idx = int(m.group()) - 1  # 1-based → 0-based
+            if 0 <= idx < len(chunks):
+                cited_chunks.append(chunks[idx])
+
+    # Fallback: if parsing yielded nothing, return all chunks
+    return clean_answer, cited_chunks if cited_chunks else chunks
+
+
 def _similarity_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[Document]:
     """Query ChromaDB and return LangChain Document objects."""
     n = min(k, collection.count())
@@ -490,11 +530,12 @@ def _answer_single_doc(question: str, filename: str, session_id: str):
             "metadata":   {"sources": []},
         })
 
-    context = "\n\n".join(doc.page_content for doc in doc_chunks)
-    result  = llm.invoke(QA_PROMPT.format(context=context, question=question))
+    context          = _build_numbered_context(doc_chunks)
+    result           = llm.invoke(QA_PROMPT.format(context=context, question=question))
+    answer, used_chunks = _parse_citations(result.content, doc_chunks)
 
     sources = []
-    for i, doc in enumerate(doc_chunks, 1):
+    for i, doc in enumerate(used_chunks, 1):
         src     = doc.metadata.get("source", "Unknown")
         page    = doc.metadata.get("page", 0)
         snippet = doc.page_content[:150].replace("\n", " ")
@@ -508,7 +549,7 @@ def _answer_single_doc(question: str, filename: str, session_id: str):
         })
 
     return jsonify({
-        "reply":      result.content,
+        "reply":      answer,
         "session_id": session_id,
         "metadata":   {"sources": sources},
     })
@@ -532,20 +573,23 @@ def _answer_multi_doc(question: str, session_id: str):
 
     context_parts: list = []
     all_chunks:    list = []
+    chunk_num = 1
     for src, chunks in by_source.items():
         context_parts.append(f"[Source: {src}]")
         for chunk in chunks:
-            context_parts.append(chunk.page_content)
+            context_parts.append(f"[CHUNK {chunk_num}]\n{chunk.page_content}")
             all_chunks.append(chunk)
+            chunk_num += 1
         context_parts.append("")
 
     result = llm.invoke(_MULTI_DOC_QA_TEMPLATE.format(
         context="\n".join(context_parts),
         question=question,
     ))
+    answer, used_chunks = _parse_citations(result.content, all_chunks)
 
     sources = []
-    for i, doc in enumerate(all_chunks, 1):
+    for i, doc in enumerate(used_chunks, 1):
         src     = doc.metadata.get("source", "Unknown")
         page    = doc.metadata.get("page", 0)
         snippet = doc.page_content[:150].replace("\n", " ")
@@ -559,7 +603,7 @@ def _answer_multi_doc(question: str, session_id: str):
         })
 
     return jsonify({
-        "reply":      result.content,
+        "reply":      answer,
         "session_id": session_id,
         "metadata":   {"sources": sources},
     })
@@ -602,8 +646,9 @@ def _chat_with_memory(question: str, session_id: str) -> tuple[str, list[Documen
         return answer, []
 
     # Step 3: Answer strictly from retrieved context
-    context = "\n\n".join(c.page_content for c in chunks)
-    answer  = llm.invoke(QA_PROMPT.format(context=context, question=condensed)).content
+    context   = _build_numbered_context(chunks)
+    raw       = llm.invoke(QA_PROMPT.format(context=context, question=condensed)).content
+    answer, chunks = _parse_citations(raw, chunks)
 
     # Step 4: Persist turn to memory
     memory.save_context({"input": question}, {"output": answer})
