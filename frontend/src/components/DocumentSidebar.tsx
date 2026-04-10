@@ -24,7 +24,7 @@ interface DocumentSidebarProps {
 export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSource, setUploadSource] = useState<"files" | "folder" | null>(null);
   const [folderProgress, setFolderProgress] = useState<{ current: number; total: number } | null>(null);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
       setError("Unsupported file type. Allowed: PDF, TXT, MD, JSON, DOCX, CSV, TSV, HTML.");
       return;
     }
-    setIsUploading(true);
+    setUploadSource("files");
     setError(null);
     setSuccessMsg(null);
     try {
@@ -65,11 +65,11 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
-      setIsUploading(false);
+      setUploadSource(null);
     }
   };
 
-  const uploadFiles = useCallback(async (files: File[]) => {
+  const uploadFiles = useCallback(async (files: File[], source: "files" | "folder" = "folder") => {
     const supported = files.filter((f) => ALLOWED_EXT.has(getExt(f.name)));
     const skipped = files.length - supported.length;
 
@@ -78,6 +78,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
       return;
     }
 
+    setUploadSource(source);
     setError(null);
     setSuccessMsg(null);
     setFolderProgress({ current: 0, total: supported.length });
@@ -100,6 +101,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
 
     await fetchDocuments();
     setFolderProgress(null);
+    setUploadSource(null);
 
     const parts: string[] = [];
     if (uploaded > 0) parts.push(`${uploaded} file${uploaded !== 1 ? "s" : ""} uploaded`);
@@ -118,7 +120,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
     // webkitRelativePath format: "folderName/file.ext" — filter to top-level only
     const topLevel = files.filter((f) => f.webkitRelativePath.split("/").length === 2);
     e.target.value = "";
-    if (topLevel.length > 0) uploadFiles(topLevel);
+    if (topLevel.length > 0) uploadFiles(topLevel, "folder");
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -142,7 +144,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
 
     const tryFinish = () => {
       if (pending === 0 && collectedFiles.length > 0) {
-        uploadFiles(collectedFiles);
+        uploadFiles(collectedFiles, "folder");
       } else if (pending === 0) {
         setError("No files found in the dropped folder.");
       }
@@ -196,7 +198,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
     }
   };
 
-  const isBusy = isUploading || folderProgress !== null;
+  const isBusy = uploadSource !== null;
 
   return (
     <>
@@ -245,7 +247,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
             onChange={(e) => {
               const files = Array.from(e.target.files ?? []);
               if (files.length === 1) handleUpload(files[0]);
-              else if (files.length > 1) uploadFiles(files);
+              else if (files.length > 1) uploadFiles(files, "files");
               e.target.value = "";
             }}
           />
@@ -266,14 +268,12 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
             disabled={isBusy}
             className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-purple-300 px-3 py-2.5 text-sm text-purple-600 hover:bg-purple-50 disabled:opacity-50 transition-colors"
           >
-            {isUploading ? (
-              <>
-                <SpinnerIcon className="w-4 h-4 animate-spin" /> Uploading…
-              </>
-            ) : folderProgress !== null ? (
+            {uploadSource === "files" ? (
               <>
                 <SpinnerIcon className="w-4 h-4 animate-spin" />
-                Uploading {folderProgress.current} / {folderProgress.total}…
+                {folderProgress !== null
+                  ? `Uploading ${folderProgress.current} / ${folderProgress.total}…`
+                  : "Uploading…"}
               </>
             ) : (
               <>
@@ -288,7 +288,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
             disabled={isBusy}
             className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-300 px-3 py-2.5 text-sm text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors"
           >
-            {folderProgress !== null ? (
+            {uploadSource === "folder" && folderProgress !== null ? (
               <>
                 <SpinnerIcon className="w-4 h-4 animate-spin" />
                 Uploading {folderProgress.current} / {folderProgress.total}…
