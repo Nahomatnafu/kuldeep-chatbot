@@ -1,0 +1,140 @@
+# Kuldeep RAG Chatbot
+
+A Retrieval-Augmented Generation (RAG) chatbot with document upload, multi-document querying, and voice transcription.
+
+**Stack:** Flask + LangChain + ChromaDB + OpenAI (backend) · Next.js 15 + React 19 + TypeScript + Tailwind CSS (frontend)
+
+---
+
+## Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- An OpenAI API key
+- A Python virtual environment at `venv\` (root) or `backend\venv\`
+
+---
+
+## Environment Setup
+
+Create a `.env` file in the project root (one already exists as a template):
+
+```env
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Optional overrides
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
+
+---
+
+## Startup
+
+### Quick start (both servers)
+
+```powershell
+.\start-dev.ps1
+```
+
+This opens two terminal windows — one for the backend (port 5000) and one for the frontend (port 3000).
+
+Once both are ready, open: **http://localhost:3000**
+
+---
+
+### First-time setup (install dependencies)
+
+```powershell
+.\start-dev.ps1 -InstallDeps
+```
+
+This runs `pip install -r requirements.txt` and `npm install` before starting.
+
+---
+
+### Start only one server
+
+```powershell
+.\start-dev.ps1 -NoFrontend   # backend only (port 5000)
+.\start-dev.ps1 -NoBackend    # frontend only (port 3000)
+```
+
+---
+
+## Stopping
+
+```powershell
+.\stop-dev.ps1
+```
+
+Kills all processes spawned by `start-dev.ps1` and frees ports 5000 and 3000.
+
+---
+
+## Manual Startup (without the scripts)
+
+### Backend
+
+```powershell
+# From the project root, with your venv activated:
+cd backend
+python run.py
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm run dev
+```
+
+---
+
+## Pre-loading Documents (optional)
+
+To bulk-ingest PDFs into the vector database before starting the server:
+
+```powershell
+cd backend
+python ingest.py                        # ingest all files in knowledge_base/
+python ingest.py path/to/document.pdf   # ingest a single file
+```
+
+Supported upload formats (via the UI or ingest script): `.pdf`, `.txt`, `.md`, `.json`, `.docx`, `.csv`, `.tsv`, `.html`
+
+---
+
+## API Endpoints (Backend — port 5000)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/chat` | Send a message (used by Next.js proxy) |
+| `GET` | `/api/documents` | List uploaded documents |
+| `POST` | `/api/documents/upload` | Upload and ingest a document |
+| `DELETE` | `/api/documents/<filename>` | Delete a document and its vectors |
+| `POST` | `/api/clear` | Clear conversation history for a session |
+| `GET` | `/api/health` | Health check |
+
+---
+
+## Project Structure
+
+```
+kuldeep-chatbot/
+├── .env                    # API keys and config
+├── start-dev.ps1           # Start both servers
+├── stop-dev.ps1            # Stop both servers
+├── backend/
+│   ├── app.py              # Flask app + RAG pipeline
+│   ├── ingest.py           # Batch document ingestion script
+│   ├── run.py              # Backend entry point
+│   ├── requirements.txt    # Python dependencies
+│   ├── knowledge_base/     # Uploaded documents
+│   └── chroma_db/          # Vector database (auto-generated)
+└── frontend/
+    ├── src/
+    │   ├── app/            # Next.js pages and API routes
+    │   └── components/     # React UI components
+    └── package.json
+```
