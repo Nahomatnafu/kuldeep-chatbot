@@ -467,24 +467,36 @@ def _detect_scope(message: str, session_id: str) -> tuple:
     keyword_matches: dict = {}          # src → set of matched keywords
     for src in by_source:
         keywords = _extract_distinctive_keywords(src)
-        overlap  = keywords & msg_words
+        # Match if a keyword is an exact word OR a prefix of a word in the query
+        # (e.g. keyword "forklift" matches query word "forklifts")
+        overlap = {
+            kw for kw in keywords
+            if any(w == kw or w.startswith(kw) or kw.startswith(w)
+                   for w in msg_words)
+        }
         if overlap:
             keyword_matches[src] = overlap
     if len(keyword_matches) == 1:
         matched_src   = next(iter(keyword_matches))
         matched_score = best_score[matched_src]
         matched_kw    = keyword_matches[matched_src]
-        # Verify the keyword is truly distinctive: it should NOT appear in the
-        # retrieved text of other competing sources.  If it does, the term is a
-        # generic topic many docs share and shouldn't shortcut the decision.
-        other_text = " ".join(
+        # Verify the keyword is truly distinctive: if it appears far more in the
+        # matched doc's chunks than in all other docs' chunks combined, it's a
+        # specific entity (like "forklift") — not a generic cross-cutting term.
+        matched_text = " ".join(doc.page_content.lower() for doc in by_source[matched_src])
+        other_text   = " ".join(
             doc.page_content.lower()
             for src2, docs in by_source.items() if src2 != matched_src
             for doc in docs
         )
-        kw_in_others = any(kw in other_text for kw in matched_kw)
-        if not kw_in_others and matched_score <= top_score + 0.05:
-            return ("pass", None)
+        for kw in matched_kw:
+            matched_count = matched_text.count(kw)
+            other_count   = other_text.count(kw)
+            # Distinctive if matched doc has the keyword and others have ≤25% as many occurrences
+            if matched_count > 0 and other_count <= matched_count * 0.25:
+                if matched_score <= top_score + 0.05:
+                    return ("pass", None)
+                break
 
     # If even the best match is a poor semantic fit, skip clarification — no doc
     # truly contains the answer so disambiguation wouldn’t help.
