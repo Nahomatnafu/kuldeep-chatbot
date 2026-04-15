@@ -8,10 +8,40 @@ A Retrieval-Augmented Generation (RAG) chatbot with document upload, multi-docum
 
 ## Prerequisites
 
-- Python 3.10+
-- Node.js 18+
-- An OpenAI API key
-- A Python virtual environment at `venv\` (root) or `backend\venv\`
+The following must be installed **manually** before running any startup script. `start-dev.ps1 -InstallDeps` will not install these for you.
+
+### Python 3.10+
+Download from [python.org](https://www.python.org/downloads/) or via winget:
+```powershell
+winget install Python.Python.3.13
+```
+Make sure `python` is on your `PATH` (tick "Add to PATH" during install on Windows).
+
+### Python virtual environment
+Create the venv once at the project root before first use:
+```powershell
+python -m venv venv
+```
+The start script looks for `venv\Scripts\python.exe` (root) or `backend\venv\Scripts\python.exe` and will throw an error if neither exists.
+
+### Node.js 18+
+Download from [nodejs.org](https://nodejs.org/) or via winget:
+```powershell
+winget install OpenJS.NodeJS.LTS
+```
+`npm` must be on your `PATH`. The start script calls `npm run dev` (and `npm install` with `-InstallDeps`) and will fail silently if Node isn't found.
+
+### OpenAI API key
+Create a `.env` file in the project root (see **Environment Setup** below). Without a valid key, chat and voice transcription will not work.
+
+---
+
+### What `-InstallDeps` handles automatically
+Once the above are in place, passing `-InstallDeps` to the start script will:
+- Run `pip install -r backend/requirements.txt` (Python packages: Flask, LangChain, ChromaDB, etc.)
+- Run `npm install` in `frontend/` (Next.js and all JS dependencies)
+
+You only need to do this once after cloning, or when dependencies change.
 
 ---
 
@@ -93,11 +123,13 @@ npm run dev
 
 ## Pre-loading Documents (optional)
 
-To bulk-ingest PDFs into the vector database before starting the server:
+To bulk-ingest PDFs into the vector database before starting the server (instead of file upload buttons in the app):
 
 ```powershell
 cd backend
-python ingest.py                        # ingest all files in knowledge_base/
+python ingest.py                        # ingest all files in knowledge_ba
+
+se/
 python ingest.py path/to/document.pdf   # ingest a single file
 ```
 
