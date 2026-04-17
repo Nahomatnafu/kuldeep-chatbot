@@ -12,10 +12,11 @@ import ChatInput from "./ChatInput";
 interface ChatPageProps {
   messages: Message[];
   onSend: (message: string) => void;
+  onClarificationSelect?: (label: string) => void;
   isLoading?: boolean;
 }
 
-export default function ChatPage({ messages, onSend, isLoading }: ChatPageProps) {
+export default function ChatPage({ messages, onSend, onClarificationSelect, isLoading }: ChatPageProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,8 +46,8 @@ export default function ChatPage({ messages, onSend, isLoading }: ChatPageProps)
 
           {/* Messages */}
           <div className="flex flex-col gap-4">
-            {messages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg} onOptionSelect={onSend} />
+            {messages.map((msg, index) => (
+              <ChatBubble key={msg.id} message={msg} onOptionSelect={onClarificationSelect ?? onSend} isLatest={index === messages.length - 1} />
             ))}
 
             {/* Typing indicator */}

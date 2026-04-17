@@ -1,0 +1,768 @@
+[
+  {
+    "id": "S1",
+    "category": "single-doc",
+    "question": "What are the main steps for calibrating equipment according to the SOP?",
+    "expected_source": "sop_maintenance_and_calibration_of_equipment",
+    "notes": "Should pull from the SOP calibration doc specifically",
+    "reply": "- The laboratory/ITU quality manager periodically reviews calibrations nearing expiration dates.\n- VHIO outsources calibration services for equipment like scales, thermometers, etc.\n- The VHIO General Services Manager requests technical and economic offers from suppliers for calibration.\n- A register is maintained with equipment to be calibrated and last verified dates.\n- The calibration service involves a periodic visit by the supplier's personnel.\n- The calibration supplier sends a report with results and certificates to the quality manager.\n- The external company attaches a label to equipment indicating calibration status validity.",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf",
+        "id": 1,
+        "page": 8,
+        "snippet": "8.4.4. Calibration of measuring equipment The laboratory/ITU quality manager should periodically review to alert about calibrations nearing their  exp..."
+      },
+      {
+        "file": "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf",
+        "id": 2,
+        "page": 8,
+        "snippet": "There is a register with all the equipment to be calibrated and the date of the last time it has been verified,  which is updated by the Laboratory/IT..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 5.81,
+    "source_files": [
+      "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "S2",
+    "category": "single-doc",
+    "question": "What is the safe food temperature for hot holding according to the FDA Food Code?",
+    "expected_source": "fda_food_code_2019",
+    "notes": "Should cite FDA doc, answer is 135\u00b0F / 57\u00b0C",
+    "reply": "- The safe food temperature for hot holding according to the FDA Food Code is at least 57\u00b0C (135\u00b0F).",
+    "sources": [
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 1,
+        "page": 508,
+        "snippet": "preclude the growth of B. cereus.  CDC estimates that approximately 250,000 foodborne illness cases can be attributed to  C. perfringens and B. cereus..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 2,
+        "page": 121,
+        "snippet": "Reheating  3-403.11 Reheating for Hot Holding.  (A) Except as specified under \u00b6\u00b6 (B) and (C) and in \u00b6 (E) of this  section, TIME/TEMPERATURE CONTROL F..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 4.06,
+    "source_files": [
+      "fda_food_code_2019.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "S3",
+    "category": "single-doc",
+    "question": "What CNC tool compensation methods are described in the Autodesk CNC book?",
+    "expected_source": "autodesk_cncbook",
+    "notes": "Single-doc retrieval from CNC book",
+    "reply": "- **Cutter Diameter Compensation (CDC)** provides a way to adjust tool paths for tool wear and deflection by measuring part features and entering the difference in the control register (Chunk 2).\n- **3D Cutter Compensation** controls the center-tip of the tool in 3D paths (Chunk 9).\n- **REST Milling**, **Pencil Toolpaths**, **3D Roughing**, **Parallel Finish**, and **Scallop Height** are common types of 3D tool paths with specific purposes and parameters (Chunk 1).\n- **3D tool paths** are used for non-prismatic parts and are calculation intensive due to the extensive checking required to prevent gouging (Chunk 9).\n- **3D tool paths** involve tradeoffs between quality and cost, with excessively fine tolerances leading to longer calculation times and potential issues at the machine (Chunk 4).",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 1,
+        "page": 113,
+        "snippet": "Fundamentals of CNC Machining  Lesson 7  2D Milling Toolpaths  7-12  Copyright 2012 HSMWorks, ApS  Cutter Diameter Compensation  Cutter Diameter Compe..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 2,
+        "page": 158,
+        "snippet": "Lesson 9  Fundamentals of CNC Machining  3D Toolpaths  Copyright 2012 HSMWorks, ApS  9-3  Overview  3D tool paths are used to machine non-prismatic pa..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 3,
+        "page": 156,
+        "snippet": "Fundamentals of CNC Machining  9-1                                  Lesson 9  3D Toolpaths            Upon successful completion of this lesson, you w..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 4,
+        "page": 159,
+        "snippet": "Fundamentals of CNC Machining  Lesson 9  3D Toolpaths  9-4  Copyright 2012 HSMWorks, ApS    Figure 2: 3D Cutter Compensation           9.2 \u2013 Tolerance..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 5.47,
+    "source_files": [
+      "Found_Testing_Documentation_autodesk_cncbook.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "S4",
+    "category": "single-doc",
+    "question": "What server error codes indicate a hardware failure?",
+    "expected_source": "server_installation-guide-error-codes",
+    "notes": "Should only pull from the server error codes doc",
+    "reply": "- **Warning 1**: Fan Failure\n- **Warning 2**: Fan Failure\n- **Warning 3**: Fan Failure\n- **Warning 4**: Fan Failure\n- **Warning 6**: Fan Failure\n- **Warning 7**: Fan Failure",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_server_installation-guide-error-codes.pdf",
+        "id": 1,
+        "page": 50,
+        "snippet": "Version 1.1      49   Warning messages list  The table below lists warning codes that are relevant to the SolarEdge inverters. These messages are  dis..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 3.99,
+    "source_files": [
+      "Found_Testing_Documentation_server_installation-guide-error-codes.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "S5",
+    "category": "single-doc",
+    "question": "What are the GMP audit categories for a manufacturing facility?",
+    "expected_source": "gmp_audit_standard",
+    "notes": "Should pull from GMP audit doc",
+    "reply": "- Regulatory\n- Food Safety Plan\n- Personnel Qualifications and Training\n- Maintenance and Sanitation\n- Equipment and Utensils (Design, Materials, and Maintenance)\n- Sanitary Facilities and Controls\n- Defect Action\n- Food By-Products for Animal Food",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 1,
+        "page": 6,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 3 of 51       GOOD MANUFACTURING PRACTICES..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 2,
+        "page": 38,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 35 of 51      Req. No. Requirement Referen..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 3,
+        "page": 9,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 6 of 51      1.3  Personnel Qualifications..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 4,
+        "page": 29,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 26 of 51      Req. No. Requirement Referen..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 5,
+        "page": 17,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 14 of 51      Req. No. Requirement Referen..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 6,
+        "page": 33,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 30 of 51      1.9  Sanitary Facilities and..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 7,
+        "page": 28,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 25 of 51        1.7  Defect Action     Req..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 8,
+        "page": 46,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 43 of 51      Req. No. Requirement Referen..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 4.2,
+    "source_files": [
+      "Found_Testing_Documentation_gmp_audit_standard.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "M1",
+    "category": "multi-doc",
+    "question": "Compare the lean manufacturing principles across all documents that discuss lean concepts.",
+    "expected_source": "multiple (boeing_lean + lean_manufacturing + possibly modern_manufacturing)",
+    "notes": "Explicit multi-doc with 'across all' trigger phrase",
+    "reply": "- Lean Manufacturing is embraced to lower costs, increase margins, and meet customer demands [CHUNK 1].\n- Boeing focuses on eliminating waste in various forms, including complexity, labor, overproduction, and space [CHUNK 2].\n- Leading manufacturing companies emphasize flexibility, productivity, defect-free products, and multi-disciplinary skills [CHUNK 3].\n- Lean manufacturing involves identifying and eliminating waste through continuous improvement [CHUNK 5].\n- Lean eliminates defects, overproduction, waiting, non-utilized resources, transportation, inventory, motion, and extra processing [CHUNK 4].\n- Clean manufacturing adds elements like full use of raw material, energy efficiency, water conservation, and reduction of emissions and wastes [CHUNK 4].",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_boeing_lean_manufacturing_studies.pdf",
+        "id": 1,
+        "page": 11,
+        "snippet": "to request a follow-up that served as a practical guide.  In response, Womack and Jones published Lean  Thinking,9 a more practical guide to eliminati..."
+      },
+      {
+        "file": "Found_Testing_Documentation_boeing_lean_manufacturing_studies.pdf",
+        "id": 2,
+        "page": 17,
+        "snippet": "combine training, planning, and implementation in a single work week so that rapid improvements can be  made on the factory floor.  The workshops focu..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 3,
+        "page": 4,
+        "snippet": "productivity, and ef\ufb01cient use of capital were the primary areas that leading manufacturing companies throughout the world emphasized during the past ..."
+      },
+      {
+        "file": "Found_Testing_Documentation_lean_manufacturing.pdf",
+        "id": 4,
+        "page": 8,
+        "snippet": "Lean and Environment Toolkit  | January 2006 | Slide 8 Combining Lean/Clean Manufacturing \u201cLean\u201d Eliminates... \u00bb Defects \u00bb Overproduction \u00bb Waiting \u00bb ..."
+      },
+      {
+        "file": "Found_Testing_Documentation_lean_manufacturing.pdf",
+        "id": 5,
+        "page": 5,
+        "snippet": "Lean and Environment Toolkit  | January 2006 | Slide 5 Defining Lean Lean is: \u201cA systematic approach to identifying and eliminating waste  (non-value ..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 4.52,
+    "source_files": [
+      "Found_Testing_Documentation_lean_manufacturing.pdf",
+      "Found_Testing_Documentation_modern_manufacturing.pdf",
+      "Found_Testing_Documentation_boeing_lean_manufacturing_studies.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "M2",
+    "category": "multi-doc",
+    "question": "Summarize all maintenance procedures mentioned across the uploaded documents.",
+    "expected_source": "multiple (c4isr_maintenance + sop_maintenance + maintenance_and_operation)",
+    "notes": "'across all' + 'summarize all' triggers broad intent",
+    "reply": "- **Generator Systems Maintenance** [Source: Found_Testing_Documentation_c4isr_maintenance_practices.pdf]\n    1. Review past maintenance records to identify repair patterns.\n    2. Compare operator records with equipment ratings for load, lubrication, and temperatures.\n    3. Thoroughly inspect generator system equipment and report discrepancies.\n    4. Ensure warning signs are in place and replace as needed.\n\n- **Compressor Maintenance** [Source: Found_Testing_Documentation_c4isr_maintenance_practices.pdf]\n    1. Inspect compressed air system from intakes to end use points.\n    2. Look for leaking pipe joints and corrosion.\n\n- **Equipment Maintenance and Calibration** [Source: Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf]\n    - Maintain equipment status log.\n    - Keep records of maintenance history, actions, calibration reports, and certificates.\n    - Perform quarterly review of maintenance and calibration Excel sheets.\n    - Head of General Services reviews sheets for compliance and traceability.\n    - Maintain evidence of reviews through email communication.\n\n- **Sanitation and Maintenance of Facilities** [Source: Found_Testing_Documentation_gmp_audit_standard.pdf]\n    - Maintain buildings and facilities in a clean and sanitary condition.\n    - Check for issues like peeling paint, dust, missing screens, cracks, etc.\n    - Have a sanitation policy for maintenance in food contact zones.\n    - Inspect and record before releasing equipment for use.",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_c4isr_maintenance_practices.pdf",
+        "id": 1,
+        "page": 147,
+        "snippet": "minimum preventive maintenance tasks as indicated in the tables.  The frequency of the tasks is indicated  in the tables.       a. Typical maintenance..."
+      },
+      {
+        "file": "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf",
+        "id": 2,
+        "page": 9,
+        "snippet": "completion and summarizing the findings. 9. METRICS There are no metrics identified in this procedure. 10. RECORDS \u2022 Equipment status log. \u2022 Record wi..."
+      },
+      {
+        "file": "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf",
+        "id": 3,
+        "page": 9,
+        "snippet": "VALL D'HEBRON INSTITUTE OF ONCOLOGY Equipment maintenance and calibration PR_GENER_0005_04 Version 4.0 Page: 9 from 10 8.5. Inventory review On a quar..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 4,
+        "page": 38,
+        "snippet": "documented, a nd  implementation must be  recorded.  Buildings, fixtures, and other physical  fa cilities of the plant must be maintained in  a  clea ..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 6.41,
+    "source_files": [
+      "Found_Testing_Documentation_gmp_audit_standard.pdf",
+      "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf",
+      "Found_Testing_Documentation_c4isr_maintenance_practices.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "M3",
+    "category": "multi-doc",
+    "question": "What do all the documents say about safety procedures?",
+    "expected_source": "multiple docs",
+    "notes": "'all documents' trigger phrase",
+    "reply": "- **General Safety Guidelines** [Source: Found_Testing_Documentation_basic_machine_tool_operations_aug_2017.pdf]\n  - **Power Tool Safety** [Source: Found_Testing_Documentation_basic_machine_tool_operations_aug_2017.pdf]\n    1. Do not lift objects heavier than can be easily managed without the aid of a lifting device or help.\n    2. Watch for slippery conditions and clean up any spills immediately.\n    3. Never remove guards or disable safety equipment from machinery.\n    4. Stop the machine and inform the instructor immediately if it makes an unusual noise or acts suspiciously.\n    5. Report ANY injury to the instructor immediately.\n    6. Call 911 immediately if an injury requires medical attention.\n    7. Smoking should only be done in designated areas.\n    8. Store rags and combustibles in covered fireproof containers.\n    9. Ensure an adequate number of proper fire extinguishers are available throughout the facility.\n    10. Personnel performing maintenance should use personal safety equipment like long-sleeve coveralls and safety shoes.\n    11. Control of blood or bodily fluids should have specified procedures for containment and elimination, cleaning, and sanitation of affected surfaces.\n    12. There should be a documented policy for control of employee illness.",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_basic_machine_tool_operations_aug_2017.pdf",
+        "id": 1,
+        "page": 2,
+        "snippet": "Table of Contents  Section Title Page  1 Florida Tech Machine Shop Rules....................................................................... 3  Wor..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 2,
+        "page": 23,
+        "snippet": "hours of entering the shop area.    You must never remove the guards or disable the safety equipment from machinery.    If the machine makes an unusua..."
+      },
+      {
+        "file": "Found_Testing_Documentation_c4isr_maintenance_practices.pdf",
+        "id": 3,
+        "page": 14,
+        "snippet": "as a minimum, should cover the type of material discussed in this manual, the use of individual protective  equipment, and electrical safety.  The loc..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 4,
+        "page": 14,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 11 of 51      Req. No. Requirement Referen..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 5,
+        "page": 8,
+        "snippet": "SCI Division Inspection Series    GMP Audit Standard      Effective Date:  April 2022                  Page 5 of 51      1.2  Food Safety Plan    Req...."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 7.09,
+    "source_files": [
+      "Found_Testing_Documentation_gmp_audit_standard.pdf",
+      "Found_Testing_Documentation_basic_machine_tool_operations_aug_2017.pdf",
+      "Found_Testing_Documentation_autodesk_cncbook.pdf",
+      "Found_Testing_Documentation_c4isr_maintenance_practices.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "A1",
+    "category": "ambiguous",
+    "question": "What is the maintenance schedule?",
+    "expected_source": "could be c4isr, sop_maintenance, or maintenance_and_operation",
+    "notes": "Generic question matching multiple docs \u2014 should clarify or handle intelligently",
+    "reply": "I found relevant content in multiple documents: \"Found Testing Documentation c4isr maintenance practices\" and \"Found Testing Documentation sop maintenance and calibration of equipment\". Which one are you asking about, or would you like me to check all relevant documents?",
+    "sources": [],
+    "clarification": {
+      "options": [
+        {
+          "label": "Found Testing Documentation c4isr maintenance practices",
+          "value": "Found_Testing_Documentation_c4isr_maintenance_practices.pdf"
+        },
+        {
+          "label": "Found Testing Documentation sop maintenance and calibration of equipment",
+          "value": "Found_Testing_Documentation_sop_maintenance_and_calibration_of_equipment.pdf"
+        },
+        {
+          "label": "All relevant documents",
+          "value": "__all__"
+        }
+      ],
+      "question": "I found relevant content in multiple documents: \"Found Testing Documentation c4isr maintenance practices\" and \"Found Testing Documentation sop maintenance and calibration of equipment\". Which one are you asking about, or would you like me to check all relevant documents?"
+    },
+    "response_time_s": 3.01,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "A2",
+    "category": "ambiguous",
+    "question": "What are the manufacturing processes?",
+    "expected_source": "could be manufacturing_processes, modern_manufacturing, processes_definitions",
+    "notes": "Very broad \u2014 multiple docs cover this",
+    "reply": "- Material removal processes\n- Deformation processes\n- Primary shaping processes\n- Continuous materials processing\n- Micro- and nano-fabrication\n- Mechanical assembly\n- Material handling",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 1,
+        "page": 4,
+        "snippet": "grouped into families, known as unit manufacturing processes, which are used throughout man- ufacturing. \u2022   Continuous materials processing,    which..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 2,
+        "page": 6,
+        "snippet": "ufacturing processes. Also, the information presented in this section will aid such an individual in pursuing further information from more specialize..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 3,
+        "page": 4,
+        "snippet": "Modern Manufacturing   13   -3   \u00a9 1999 by CRC Press LLC   13.1 Introduction   Jay Lee and Robert Shafrik   Manufacturing is the means by which the te..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 4,
+        "page": 8,
+        "snippet": "Modern Manufacturing   13   -7   \u00a9 1999 by CRC Press LLC   since that is the most likely material which users of this handbook will encounter. However..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 5,
+        "page": 8,
+        "snippet": "The section ends with a case study that demonstrates how understanding of the different unit processes can be used to make engineering decisions. \u2022 Ma..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 3.78,
+    "source_files": [
+      "Found_Testing_Documentation_modern_manufacturing.pdf"
+    ],
+    "error": null
+  },
+  {
+    "id": "A3",
+    "category": "ambiguous",
+    "question": "How do I operate the machine?",
+    "expected_source": "could be basic_machine_tool, CNC, maintenance_and_operation",
+    "notes": "Vague \u2014 should clarify which machine/doc",
+    "reply": "I found relevant content in multiple documents: \"Found Testing Documentation autodesk cncbook\" and \"Found Testing Documentation basic machine tool operations aug 2017\". Which one are you asking about, or would you like me to check all relevant documents?",
+    "sources": [],
+    "clarification": {
+      "options": [
+        {
+          "label": "Found Testing Documentation autodesk cncbook",
+          "value": "Found_Testing_Documentation_autodesk_cncbook.pdf"
+        },
+        {
+          "label": "Found Testing Documentation basic machine tool operations aug 2017",
+          "value": "Found_Testing_Documentation_basic_machine_tool_operations_aug_2017.pdf"
+        },
+        {
+          "label": "All relevant documents",
+          "value": "__all__"
+        }
+      ],
+      "question": "I found relevant content in multiple documents: \"Found Testing Documentation autodesk cncbook\" and \"Found Testing Documentation basic machine tool operations aug 2017\". Which one are you asking about, or would you like me to check all relevant documents?"
+    },
+    "response_time_s": 2.7,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "O1",
+    "category": "off-topic",
+    "question": "What is the capital of France?",
+    "expected_source": "none \u2014 should be blocked",
+    "notes": "General knowledge, not in any doc",
+    "reply": "I can only answer questions about the uploaded documents.",
+    "sources": [],
+    "clarification": null,
+    "response_time_s": 2.4,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "O2",
+    "category": "off-topic",
+    "question": "Tell me a joke about manufacturing.",
+    "expected_source": "none \u2014 should be blocked or deflected",
+    "notes": "Social / entertainment request",
+    "reply": "I can only answer questions about the uploaded documents.",
+    "sources": [],
+    "clarification": null,
+    "response_time_s": 2.02,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "O3",
+    "category": "off-topic",
+    "question": "What is my name?",
+    "expected_source": "none \u2014 guard should catch this",
+    "notes": "Personal identity question",
+    "reply": "I can only answer questions about the uploaded documents.",
+    "sources": [],
+    "clarification": null,
+    "response_time_s": 2.34,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "F1",
+    "category": "follow-up",
+    "question": "What types of CNC machines are discussed in the CNC book?",
+    "expected_source": "autodesk_cncbook",
+    "notes": "First turn \u2014 establishes topic",
+    "reply": "- Milling machines and lathes are discussed in the CNC book.\n- Lathe configurations include those with two spindles, two tool turrets, and some integrating milling or grinding.\n- The book focuses on a common lathe configuration called a Turning Center with one spindle and tool turret.\n- Various tool types for CNC milling machines are introduced, such as end mills, corner rounding tools, slot tools, and more.\n- The course aims to teach programming and operating CNC mills and lathes to individuals with a technical background.",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 1,
+        "page": 4,
+        "snippet": "Fundamentals of CNC Machining    i      Chapter 1:  Introduction& CNC Process   Overview  Description ..................................................."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 2,
+        "page": 124,
+        "snippet": "Lesson 8  Fundamentals of CNC Machining  CNC Turning  Copyright 2012 HSMWorks, ApS  8-3  Overview  Milling machines work by moving a spinning tool ove..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 3,
+        "page": 26,
+        "snippet": "Lesson 3  Fundamentals of CNC Machining  CNC Tools  Copyright 2012 HSMWorks, ApS  3-3  Overview    A wide range of tool types and configurations are a..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 4,
+        "page": 12,
+        "snippet": "Lesson 1  Fundamentals of CNC Machining  Introduction & CNC Process Overview  Copyright 2012 HSMWorks, ApS  1-3  1.1 Course Description    The goal of..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 5.33,
+    "source_files": [
+      "Found_Testing_Documentation_autodesk_cncbook.pdf"
+    ],
+    "error": null,
+    "follow_up_question": "Tell me more about the first type mentioned.",
+    "follow_up_reply": "- Neural networks consist of nodes with nonlinear computational elements.\n- The connectivity between nodes, known as weights, can be modified based on a preset learning rule.\n- The knowledge in neural networks is stored in their interconnections.\n- Neural networks have advantages like adaptability, learning from experience, quick computation, and suitability for real-time applications.\n- Different model architectures can be used in neural networks.",
+    "follow_up_sources": [
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 1,
+        "page": 99,
+        "snippet": "turing. This section describes the principles and functions of these tools. Examples in applying these tools to manufacturing applications are highlig..."
+      }
+    ],
+    "follow_up_time_s": 6.14,
+    "follow_up_source_files": [
+      "Found_Testing_Documentation_modern_manufacturing.pdf"
+    ]
+  },
+  {
+    "id": "F2",
+    "category": "follow-up",
+    "question": "What does the FDA Food Code say about employee hygiene?",
+    "expected_source": "fda_food_code_2019",
+    "notes": "First turn",
+    "reply": "- The FDA Food Code emphasizes the importance of employee hygiene to prevent the spread of foodborne pathogens.\n- It includes guidelines on practices like eating, drinking, and using tobacco in designated areas to prevent contamination.\n- The code also addresses issues like discharges from the eyes, nose, and mouth, and the importance of maintaining personal cleanliness and changing outer garments to prevent allergen cross-contact.\n- Employee health provisions aim to remove infectious employees from the workplace and were developed with input from CDC and EEOC.\n- The Food Code specifies exclusion or restriction of employees with symptoms or exposure to Norovirus, with a focus on timely clean-up in case of illness.\n- It is a shared responsibility of the food industry and government to ensure safe food and meet consumer expectations.\n- The Food Code provides a system of prevention and safeguards to minimize foodborne illness and ensure employee health and safe food practices.",
+    "sources": [
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 1,
+        "page": 83,
+        "snippet": "2-4 HYGIENIC PRACTICES  Subparts  2-401 Food Contamination Prevention  2-402 Hair Restraints  2-403 Animals  Food Contamination Prevention  2-401.11 E..."
+      },
+      {
+        "file": "Found_Testing_Documentation_gmp_audit_standard.pdf",
+        "id": 2,
+        "page": 11,
+        "snippet": "food. The methods for maintaining  clea nliness include:  21 CFR  117.10  (b)  Verify tha t the facility has a   policy for personnel hygiene,  and th..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 3,
+        "page": 456,
+        "snippet": "or from exposure to airborne Norovirus from vomitus.  Additionally, exposed food  employees are also at risk of contracting Norovirus illness and can ..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 4,
+        "page": 411,
+        "snippet": "The Food Code provisions related to employee health are aimed at removing highly  infectious food employees from the work place. They were developed w..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 5,
+        "page": 10,
+        "snippet": "3.  PUBLIC HEALTH AND CONSUMER EXPECTATIONS  It is a shared responsibility of the food industry and the government to ensure that food  provided to th..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 6,
+        "page": 331,
+        "snippet": "10. Food and Drug Administration, January, 2005.  Investigations Operations Manual,  Chapter 5, Establishment Inspection, Subchapter 530, Food Section..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 5.61,
+    "source_files": [
+      "fda_food_code_2019.pdf",
+      "Found_Testing_Documentation_gmp_audit_standard.pdf"
+    ],
+    "error": null,
+    "follow_up_question": "What are the specific handwashing requirements?",
+    "follow_up_reply": "- **When to Wash**: Hands must be washed before, during, or after specific activities that may contaminate them, with examples listed in the Code section. Handwashing is required after any activity that could result in hand contamination.\n- **Where to Wash**: Effective handwashing is crucial to prevent hand contamination, especially after using the toilet and between tasks that may recontaminate the hands.\n- **Hand Drying Provision**: Provisions for hand drying must be provided to prevent bacterial and viral transfer, as wet hands transfer bacteria more readily than dry hands.\n- **Handwashing Sinks**: A minimum number of handwashing sinks must be available, with hand cleanser always present, and hand drying provisions provided to avoid drying hands on unclean materials.\n- **Maintenance**: Proper fingernail maintenance is essential to prevent bacterial transfer to food.\n- **Prohibition**: Jewelry is prohibited to prevent contamination.\n- **Clean Condition**: Outer clothing must be in a clean condition to prevent contamination.\n- **Effectiveness**: Hair restraints must be effective to prevent hair from contaminating food.\n- **Documentation**: Records must be kept to document handwashing practices and additional control measures used by food employees when contacting ready-to-eat foods with bare hands.",
+    "follow_up_sources": [
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 1,
+        "page": 449,
+        "snippet": "2-301.13 Special Handwash Procedures.  This section is reserved.  In earlier editions of the Code, FDA's model contained a provision for a Special  Pr..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 2,
+        "page": 101,
+        "snippet": "(a) The RISKS of contacting the specific READY-TO-EAT  FOODS with bare hands,  (b) Proper handwashing as specified under \u00a7 2-301.12,  (c) When to wash..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 3,
+        "page": 475,
+        "snippet": "fingertips clean and handwashing occurs at the times specified in section 2-301.14,  including after using the toilet and between tasks that may recon..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 4,
+        "page": 590,
+        "snippet": "Handwashing Sinks  6-301.10 Minimum Number.  Refer to the public health reason for \u00a7 5-203.11.  6-301.11 Handwashing Cleanser, Availability.  Hand cle..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 5,
+        "page": 331,
+        "snippet": "10. Food and Drug Administration, January, 2005.  Investigations Operations Manual,  Chapter 5, Establishment Inspection, Subchapter 530, Food Section..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 6,
+        "page": 727,
+        "snippet": "preparation is performed at the time of inspection.  Applicable Code Sections:  3-301.11 Preventing Contamination from Hands (P, Pf, C)   3-801.11(D) ..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 7,
+        "page": 473,
+        "snippet": "Each of these factors is inadequate when utilized independently and may not be  effective.  However, when all three factors are combined and utilized ..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 8,
+        "page": 215,
+        "snippet": "A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be cle..."
+      },
+      {
+        "file": "fda_food_code_2019.pdf",
+        "id": 9,
+        "page": 709,
+        "snippet": "handwashing procedures prior to food preparation and other procedures as necessary to prevent cross-contamination during  all hours of operation when ..."
+      }
+    ],
+    "follow_up_time_s": 7.49,
+    "follow_up_source_files": [
+      "fda_food_code_2019.pdf"
+    ]
+  },
+  {
+    "id": "X1",
+    "category": "out-of-scope",
+    "question": "What is the OSHA regulation for fall protection in construction?",
+    "expected_source": "none \u2014 should say docs don't contain this",
+    "notes": "Plausible manufacturing question but not in any doc",
+    "reply": "The uploaded documents do not contain information about this.",
+    "sources": [],
+    "clarification": null,
+    "response_time_s": 3.76,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "X2",
+    "category": "out-of-scope",
+    "question": "What is the torque specification for a Ford F-150 lug nut?",
+    "expected_source": "none \u2014 should say docs don't contain this",
+    "notes": "Specific factual Q not in any doc \u2014 tests hallucination resistance",
+    "reply": "The context does not contain information about the torque specification for a Ford F-150 lug nut.",
+    "sources": [],
+    "clarification": null,
+    "response_time_s": 4.04,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "E1",
+    "category": "edge-case",
+    "question": "CNC",
+    "expected_source": "autodesk_cncbook or clarification",
+    "notes": "Single keyword \u2014 how does system handle it?",
+    "reply": "I found relevant content in multiple documents: \"Found Testing Documentation autodesk cncbook\" and \"Found Testing Documentation modern manufacturing\". Which one are you asking about, or would you like me to check all relevant documents?",
+    "sources": [],
+    "clarification": {
+      "options": [
+        {
+          "label": "Found Testing Documentation autodesk cncbook",
+          "value": "Found_Testing_Documentation_autodesk_cncbook.pdf"
+        },
+        {
+          "label": "Found Testing Documentation modern manufacturing",
+          "value": "Found_Testing_Documentation_modern_manufacturing.pdf"
+        },
+        {
+          "label": "All relevant documents",
+          "value": "__all__"
+        }
+      ],
+      "question": "I found relevant content in multiple documents: \"Found Testing Documentation autodesk cncbook\" and \"Found Testing Documentation modern manufacturing\". Which one are you asking about, or would you like me to check all relevant documents?"
+    },
+    "response_time_s": 2.69,
+    "source_files": [],
+    "error": null
+  },
+  {
+    "id": "E2",
+    "category": "edge-case",
+    "question": "What is the difference between turning and milling and drilling and boring and grinding?",
+    "expected_source": "manufacturing docs",
+    "notes": "Long compound question \u2014 tests chunk retrieval breadth",
+    "reply": "- Turning involves spinning the part and moving the tool, ideal for round parts like shafts, pins, and pulleys. Milling machines work by moving a spinning tool over a stationary part.\n- Milling is preferred for production operations due to its efficiency in material removal and automation.\n- Broaching is a precision machining process that efficiently produces smooth surfaces with close tolerances.\n- Different metal-cutting machine tools can be categorized based on the type of cutter used: single-point tools, multipoint tools, or abrasive grits.\n- Driven tools in CNC lathes can create shapes like face milling, radial holes, and slots, reducing production costs and improving machining high tolerance parts.\n- Lathes support common drill G-code cycles, including spot drilling, progressively larger drills for large holes, and peck drilling for deeper holes.\n- Boring machines are known for their rigidity, adaptability, and accuracy in machining large workpieces.\n- Grooves, threads, bores, and cutoff operations are common in lathe machining processes.\n- Drilling machines come in types like sensitive, pillar, radial, and multispindle drilling machines.\n- Planing and shaping are processes used for producing flat, straight surfaces and contour operations on workpieces.",
+    "sources": [
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 1,
+        "page": 124,
+        "snippet": "Lesson 8  Fundamentals of CNC Machining  CNC Turning  Copyright 2012 HSMWorks, ApS  8-3  Overview  Milling machines work by moving a spinning tool ove..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 2,
+        "page": 23,
+        "snippet": "or a shaper that can machine workpieces of similar size to similar \ufb01nishes. Milling tools usually cost up to 50 times as much as tools for planers and..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 3,
+        "page": 11,
+        "snippet": "a machining operation. The two motion components often take place simultaneously in orthogonal directions. The functional de\ufb01nitions of turning, milli..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 4,
+        "page": 130,
+        "snippet": "Lesson 8  Fundamentals of CNC Machining  CNC Turning  Copyright 2012 HSMWorks, ApS  8-9  8.3 - Driven Tools  One variation of the CNC lathe is called ..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 5,
+        "page": 153,
+        "snippet": "Fundamentals of CNC Machining  Lesson 8  CNC Turning  8-32  Copyright 2012 HSMWorks, ApS  Drill    Lathes support common drill G-code cycles, includin..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 6,
+        "page": 18,
+        "snippet": "Modern Manufacturing 13-17 \u00a9 1999 by CRC Press LLC Machines used for boring are noted for their rigidity, adaptability, and ability to maintain a high..."
+      },
+      {
+        "file": "Found_Testing_Documentation_autodesk_cncbook.pdf",
+        "id": 7,
+        "page": 146,
+        "snippet": "3 \u2013 Groove  Grooves have many configurations, but most h ave straight walls and radii at the bottom and top  that is  formed with the groove tool.    ..."
+      },
+      {
+        "file": "Found_Testing_Documentation_manufacturing_processes.pdf",
+        "id": 8,
+        "page": 125,
+        "snippet": "110 Manufacturing Processes Step drilling: More than one diameter can be ground on the drill body which saves an extra operation. Counter boring: Ofte..."
+      },
+      {
+        "file": "Found_Testing_Documentation_modern_manufacturing.pdf",
+        "id": 9,
+        "page": 19,
+        "snippet": "in./rev (0.13 and 0.51 mm/r ev). Finishing cuts have a signi\ufb01cantly lower feed rate (e.g., 0.001 in./rev, 0.03 mm/r ev), and roughing cuts are made at..."
+      },
+      {
+        "file": "Found_Testing_Documentation_manufacturing_processes.pdf",
+        "id": 10,
+        "page": 122,
+        "snippet": "This is on account of the chisel edge which does not allow the cutting edges to come into the contact with metal and start cutting  until the chisel e..."
+      }
+    ],
+    "clarification": null,
+    "response_time_s": 5.59,
+    "source_files": [
+      "Found_Testing_Documentation_manufacturing_processes.pdf",
+      "Found_Testing_Documentation_modern_manufacturing.pdf",
+      "Found_Testing_Documentation_autodesk_cncbook.pdf"
+    ],
+    "error": null
+  }
+]

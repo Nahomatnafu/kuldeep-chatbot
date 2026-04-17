@@ -65,6 +65,42 @@ export default function Home() {
     }
   }, [messages]);
 
+  // Clarification button selection — sends the selected option value to backend without adding a user bubble
+  const handleClarificationSelect = useCallback(async (selectedValue: string) => {
+    setIsLoading(true);
+    try {
+      const history = messages.map(({ role, content }) => ({ role, content }));
+      const response = await sendMessage(selectedValue, history, sessionIdRef.current);
+      if (response.session_id) {
+        sessionIdRef.current = response.session_id;
+      }
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-${Date.now()}`,
+          role: "assistant",
+          content: response.reply,
+          timestamp: new Date().toISOString(),
+          sources: response.metadata?.sources,
+          clarification: response.metadata?.clarification,
+        },
+      ]);
+    } catch (err) {
+      console.error("[chat] clarification API call failed:", err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          role: "assistant",
+          content: "Sorry, I couldn't reach the assistant. Please check that the backend is running and try again.",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [messages]);
+
   const hasMessages = messages.length > 0 || isLoading;
 
   return (
@@ -80,6 +116,7 @@ export default function Home() {
         <ChatPage
           messages={messages}
           onSend={handleSend}
+          onClarificationSelect={handleClarificationSelect}
           isLoading={isLoading}
         />
       ) : (

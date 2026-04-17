@@ -19,6 +19,7 @@ export interface Source {
   file: string;
   page: number;       // 1-indexed
   snippet: string;
+  full_snippet?: string;
 }
 
 export interface ClarificationOption {

@@ -50,8 +50,10 @@ CHUNK_OVERLAP      = 200
 MAX_UPLOAD_MB      = 32
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"}
 BROAD_INTENT_PHRASES = {
-    "all documents", "all docs", "across all", "across documents", "from all",
-    "compare", "consolidate", "summarize all", "all relevant", "every document",
+    "all documents", "all the documents", "all docs", "all the docs",
+    "across all", "across documents", "across the documents", "from all",
+    "compare", "consolidate", "summarize all", "all relevant",
+    "every document", "every doc", "from every",
 }
 SESSION_TTL_SECONDS      = 2 * 60 * 60   # evict sessions idle for 2 hours
 MAX_MULTI_DOC_CHUNKS     = 40            # hard cap on total chunks sent to LLM (≈10K tokens)
@@ -157,11 +159,18 @@ If you used none of the chunks, write: SOURCES_USED: none"""
 # ── Off-topic guard ───────────────────────────────────────────────────────────
 _GUARD_PROMPT = (
     "You are a strict classifier. Answer with exactly one word: YES or NO.\n\n"
-    "Question: Is the user's message below a question about a specific person's own "
-    "identity or personal life (e.g. 'What is my name?', 'How old am I?', 'Who am I?'), "
-    "OR pure social small talk with no factual/document question?\n\n"
-    "Important: questions about a *topic's* name or properties (e.g. 'What is the name "
-    "of the model?') are NOT personal — answer NO for those.\n\n"
+    "Question: Does the user's message fall into ANY of these categories?\n"
+    "1. A question about the user's own identity or personal life "
+    "(e.g. 'What is my name?', 'How old am I?')\n"
+    "2. Pure social small talk with no factual question\n"
+    "3. A request for jokes, stories, poems, or entertainment — even if the "
+    "topic mentioned relates to work (e.g. 'Tell me a joke about manufacturing' → YES)\n"
+    "4. A general knowledge question clearly unrelated to workplace documents, "
+    "manufacturing, equipment, procedures, food safety, or technical operations "
+    "(e.g. 'What is the capital of France?', 'Who won the Super Bowl?')\n\n"
+    "Important: if the user is asking for factual or procedural information that "
+    "COULD plausibly appear in a workplace manual, SOP, or technical document — "
+    "answer NO. But jokes, stories, and entertainment requests are always YES.\n\n"
     "User message: \"{msg}\"\n\n"
     "Answer (YES or NO):"
 )
@@ -174,6 +183,13 @@ def _is_off_topic(question: str) -> bool:
     Returns True  → block the question and return the canned off-topic reply.
     Returns False → let the full RAG chain handle it normally.
     """
+    # Fast deterministic check for obvious entertainment requests
+    _lower = question.lower()
+    _ENTERTAINMENT_WORDS = ("joke", "jokes", "story", "stories", "poem", "poems",
+                            "riddle", "riddles", "sing", "song", "limerick")
+    if any(w in _lower for w in _ENTERTAINMENT_WORDS):
+        return True
+
     global _guard_llm
     try:
         if _guard_llm is None:
@@ -299,6 +315,21 @@ def _build_numbered_context(chunks: list) -> str:
     return "\n\n".join(f"[CHUNK {i}]\n{c.page_content}" for i, c in enumerate(chunks, 1))
 
 
+def _dedup_chunks(chunks: list) -> list:
+    """Remove duplicate chunks by (source_file, page), preserving order."""
+    seen = set()
+    result = []
+    for doc in chunks:
+        key = (
+            os.path.basename(doc.metadata.get("source", "")),
+            doc.metadata.get("page", 0),
+        )
+        if key not in seen:
+            seen.add(key)
+            result.append(doc)
+    return result
+
+
 def _parse_citations(raw_answer: str, chunks: list) -> tuple:
     """Parse SOURCES_USED line from answer. Returns (clean_answer, cited_chunks).
     Falls back to all chunks if the LLM omits the citation line.
@@ -352,11 +383,11 @@ def _similarity_search_with_score(query: str, k: int = NUM_CHUNKS) -> list[tuple
 # ── Scope detection ──────────────────────────────────────────────────────────
 
 _SCOPE_CANDIDATE_K      = 12
-_SCORE_COMPETITION_GAP  = 0.35  # L2 distance margin — sources within this gap of the
+_SCORE_COMPETITION_GAP  = 0.15  # L2 distance margin — sources within this gap of the
                                 # top chunk are considered genuinely competitive
-_MIN_RELEVANCE_SCORE    = 0.50  # Skip clarification entirely if the best chunk is
+_MIN_RELEVANCE_SCORE    = 0.20  # Skip clarification entirely if the best chunk is
                                 # worse than this — no doc truly contains the answer
-_DOMINANCE_RATIO        = 0.25  # If (runner-up - top) / top >= this ratio the top doc
+_DOMINANCE_RATIO        = 0.10  # If (runner-up - top) / top >= this ratio the top doc
                                 # is dominant enough to skip clarification
 
 # Words that occur in many filenames and carry no distinguishing meaning.
@@ -423,8 +454,12 @@ def _detect_scope(message: str, session_id: str) -> tuple:
 
     # 1 — Resolve a pending clarification
     if pending:
+        choice = message.strip().lower()
         for opt in pending["options"]:
-            if message.strip().lower() == opt["label"].lower():
+            label = str(opt.get("label", "")).strip().lower()
+            value = str(opt.get("value", "")).strip().lower()
+            display_value = _display_name(str(opt.get("value", ""))).lower()
+            if choice in {label, value, display_value}:
                 session["pending_clarification"] = None
                 orig = pending["original_question"]
                 if opt["value"] == "__all__":
@@ -503,7 +538,7 @@ def _detect_scope(message: str, session_id: str) -> tuple:
                 break
 
     # If even the best match is a poor semantic fit, skip clarification — no doc
-    # truly contains the answer so disambiguation wouldn’t help.
+    # truly contains the answer so disambiguation wouldn't help.
     if top_score >= _MIN_RELEVANCE_SCORE:
         return ("pass", None)
     # Dominance check — if the top doc's score is substantially better than the
@@ -551,17 +586,18 @@ def _answer_single_doc(question: str, filename: str, session_id: str):
     answer, used_chunks = _parse_citations(result.content, doc_chunks)
 
     sources = []
-    for i, doc in enumerate(used_chunks, 1):
+    for i, doc in enumerate(_dedup_chunks(used_chunks), 1):
         src     = doc.metadata.get("source", "Unknown")
         page    = doc.metadata.get("page", 0)
         snippet = doc.page_content[:150].replace("\n", " ")
         if len(doc.page_content) > 150:
             snippet += "..."
         sources.append({
-            "id":      i,
-            "file":    os.path.basename(src),
-            "page":    page + 1,
-            "snippet": snippet,
+            "id":         i,
+            "file":       os.path.basename(src),
+            "page":       page + 1,
+            "snippet":    snippet,
+            "full_snippet": doc.page_content.replace("\n", " "),
         })
 
     return jsonify({
@@ -605,17 +641,18 @@ def _answer_multi_doc(question: str, session_id: str):
     answer, used_chunks = _parse_citations(result.content, all_chunks)
 
     sources = []
-    for i, doc in enumerate(used_chunks, 1):
+    for i, doc in enumerate(_dedup_chunks(used_chunks), 1):
         src     = doc.metadata.get("source", "Unknown")
         page    = doc.metadata.get("page", 0)
         snippet = doc.page_content[:150].replace("\n", " ")
         if len(doc.page_content) > 150:
             snippet += "..."
         sources.append({
-            "id":      i,
-            "file":    os.path.basename(src),
-            "page":    page + 1,
-            "snippet": snippet,
+            "id":         i,
+            "file":       os.path.basename(src),
+            "page":       page + 1,
+            "snippet":    snippet,
+            "full_snippet": doc.page_content.replace("\n", " "),
         })
 
     return jsonify({
@@ -711,16 +748,34 @@ def chat():
                 "metadata":   {"sources": []},
             })
 
-        # Guard: block personal/off-topic questions BEFORE retrieval runs
-        if _is_off_topic(message):
+        # Guard: block personal/off-topic questions BEFORE retrieval runs.
+        # Skip the guard for follow-up messages and pending clarification selections,
+        # since those short inputs depend on prior context.
+        session_data = conversation_sessions.get(session_id, {})
+        has_history = "memory" in session_data and session_data["memory"].load_memory_variables({}).get("chat_history", "")
+        has_pending_clarification = bool(session_data.get("pending_clarification"))
+        if not has_history and not has_pending_clarification and _is_off_topic(message):
             return jsonify({
                 "reply":      "I can only answer questions about the uploaded documents.",
                 "session_id": session_id,
                 "metadata":   {"sources": []},
             })
 
+        # ── Condense follow-ups before scope detection ──────────────────────────
+        # If there's conversation history, rephrase the message into a standalone
+        # question so that scope detection works on the full context, not just
+        # a bare pronoun like "tell me more about the first one."
+        chat_history = ""
+        if has_history:
+            chat_history = session_data["memory"].load_memory_variables({}).get("chat_history", "")
+            condensed_for_scope = llm.invoke(
+                CONDENSE_PROMPT.format(chat_history=chat_history, question=message)
+            ).content.strip()
+        else:
+            condensed_for_scope = message
+
         # ── Scope detection ──────────────────────────────────────────────────────
-        scope, scope_data = _detect_scope(message, session_id)
+        scope, scope_data = _detect_scope(condensed_for_scope, session_id)
 
         if scope == "ambiguous":
             options  = _build_clarification_options(scope_data)
@@ -749,17 +804,18 @@ def chat():
         answer, source_docs = _chat_with_memory(message, session_id)
 
         sources = []
-        for i, doc in enumerate(source_docs, 1):
+        for i, doc in enumerate(_dedup_chunks(source_docs), 1):
             src     = doc.metadata.get("source", "Unknown")
             page    = doc.metadata.get("page", 0)
             snippet = doc.page_content[:150].replace("\n", " ")
             if len(doc.page_content) > 150:
                 snippet += "..."
             sources.append({
-                "id":      i,
-                "file":    os.path.basename(src),
-                "page":    page + 1,
-                "snippet": snippet,
+                "id":         i,
+                "file":       os.path.basename(src),
+                "page":       page + 1,
+                "snippet":    snippet,
+                "full_snippet": doc.page_content.replace("\n", " "),
             })
 
         return jsonify({

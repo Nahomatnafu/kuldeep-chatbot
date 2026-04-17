@@ -446,6 +446,60 @@ class TestDocumentDeleteEndpoint:
 
 # ── Group 11: Clear Conversation Endpoint ────────────────────────────────────
 
+class TestClarificationResolution:
+
+    def setup_method(self):
+        app_module.collection = _ready_collection()
+        app_module.llm = MagicMock()
+
+    def test_detect_scope_resolves_selected_option_by_value(self):
+        app_module.conversation_sessions["sess-1"] = {
+            "pending_clarification": {
+                "original_question": "what are all the cs project class assignments and their grade percentages",
+                "options": [
+                    {"label": "Found Testing Documentation cs project syllabus spring 2026 v2", "value": "cs_project_syllabus_spring_2026_v2.pdf"},
+                    {"label": "Found Testing Documentation cs seminar syllabus spring 2026 v1", "value": "cs_seminar_syllabus_spring_2026_v1.pdf"},
+                ],
+            }
+        }
+
+        scope, scope_data = app_module._detect_scope("cs_project_syllabus_spring_2026_v2.pdf", "sess-1")
+
+        assert scope == "resolved_single"
+        assert scope_data == (
+            "cs_project_syllabus_spring_2026_v2.pdf",
+            "what are all the cs project class assignments and their grade percentages",
+        )
+        assert app_module.conversation_sessions["sess-1"]["pending_clarification"] is None
+
+    def test_chat_does_not_reask_after_clarification_selection(self, client):
+        app_module.conversation_sessions["sess-2"] = {
+            "pending_clarification": {
+                "original_question": "what are all the cs project class assignments and their grade percentages",
+                "options": [
+                    {"label": "Found Testing Documentation cs project syllabus spring 2026 v2", "value": "cs_project_syllabus_spring_2026_v2.pdf"},
+                    {"label": "All relevant documents", "value": "__all__"},
+                ],
+            }
+        }
+
+        with patch("app._answer_single_doc") as mock_single:
+            mock_single.return_value = app.response_class(
+                response='{"reply":"Assignments answer","session_id":"sess-2","metadata":{"sources":[]}}',
+                status=200,
+                mimetype="application/json",
+            )
+            res = client.post("/chat", json={"message": "cs_project_syllabus_spring_2026_v2.pdf", "session_id": "sess-2"})
+
+        assert res.status_code == 200
+        assert res.get_json()["reply"] == "Assignments answer"
+        mock_single.assert_called_once_with(
+            "what are all the cs project class assignments and their grade percentages",
+            "cs_project_syllabus_spring_2026_v2.pdf",
+            "sess-2",
+        )
+
+
 class TestClearConversationEndpoint:
 
     def test_clears_named_session(self, client):

@@ -339,7 +339,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
                 >
                   <FileIcon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-700 truncate">{doc.filename}</p>
+                    <p className="text-xs font-medium text-gray-700 truncate" title={doc.filename}>{doc.filename}</p>
                     <p className="text-[10px] text-gray-400">{doc.chunks} chunks</p>
                   </div>
                   <button
