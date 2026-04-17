@@ -1,5 +1,69 @@
 # ❓ Client FAQ — Common Questions Answered
 
+## Recurring Usage (After Initial Setup)
+
+### Q: After the first setup, how do I start the chatbot?
+**A:** Only 4 simple steps:
+
+1. Open Docker Desktop (click the icon, wait 30 seconds)
+2. Open Terminal (copy-paste: `powershell` on Windows, `terminal` on Mac)
+3. Navigate to folder: `cd kuldeep-chatbot`
+4. Start: `docker-compose up`
+5. Open http://localhost:3000 in browser
+
+Then you can use the chatbot. When done, press CTRL+C in Terminal to stop.
+
+**That's it! Same steps every time.**
+
+---
+
+### Q: Do I have to open Terminal every time?
+**A:** YES, you need Terminal to start the containers.
+
+**But here's the good news:**
+- You only type one command: `docker-compose up`
+- Takes 10 seconds
+- After that, everything works in your browser
+- Once running, you don't touch Terminal again until you stop
+
+**Think of it like this:**
+- Opening Docker Desktop = turning on the car engine
+- Opening Terminal + `docker-compose up` = starting the engine (1 command)
+- Using the chatbot = driving the car (all in browser, no engine commands needed)
+
+---
+
+### Q: Do I just go to Docker and the project will be there?
+**A:** Not quite. Here's how Docker works:
+
+1. Docker Desktop is just the engine — it runs in the background
+2. The `kuldeep-chatbot` folder stays on your computer (Desktop, Downloads, etc.)
+3. You still need to open Terminal to tell Docker to start that folder's containers
+4. Then the chatbot appears at http://localhost:3000
+
+**You can't just click Docker and have the chatbot magically start.** Docker needs the Terminal command to know which project to run.
+
+---
+
+### Q: Can I create a shortcut or button to start everything?
+**A:** YES! Ask your developer to create a batch file (Windows) or shell script (Mac/Linux) that you can double-click to start everything automatically.
+
+For now, use the Terminal method (it's really just 1 command).
+
+---
+
+### Q: What if I restart my computer?
+**A:**
+1. Open Docker Desktop
+2. Open Terminal
+3. `cd kuldeep-chatbot`
+4. `docker-compose up`
+5. Done
+
+Your documents and chat history are safe. Nothing is deleted when your computer restarts.
+
+---
+
 ## Setup Questions
 
 ### Q: Do I need to install VS Code or any coding software?

@@ -152,16 +152,156 @@ Once you see "Ready" in the logs, open:
 - In the terminal, press `CTRL + C` (hold Control, press C)
 - Your documents are saved — nothing is deleted
 
-**To run it again later:**
-- Open terminal
-- Run: `cd kuldeep-chatbot`
-- Run: `docker-compose up`
-- Open http://localhost:3000
+---
 
-**To delete everything and start fresh:**
-- Run: `docker-compose down -v`
-- Your data will be deleted
-- Run `docker-compose up` to start over
+## 🔄 Next Time You Want to Use It (After Setup)
+
+**Good news:** You only do the setup once. After that, it's much simpler!
+
+### Every Time You Want to Use the Chatbot:
+
+1. **Open Docker Desktop** (same as before)
+   - Click the Docker icon in your Start Menu / Applications
+   - Wait 30 seconds for it to start
+
+2. **Open Terminal/PowerShell** (same as before)
+   - Windows: `Windows Key + R` → type `powershell` → Enter
+   - macOS: `Command + Space` → type `terminal` → Enter
+
+3. **Navigate to the project folder**
+   ```bash
+   cd kuldeep-chatbot
+   ```
+
+4. **Start the containers**
+   ```bash
+   docker-compose up
+   ```
+
+5. **Wait for "Ready" message** in the terminal
+
+6. **Open your browser**
+   - Go to: http://localhost:3000
+   - Done! ✅
+
+**That's it!** Just 4 simple steps (Step 1 is just opening an app).
+
+### To Stop When Done:
+- Press `CTRL + C` in the terminal
+- Everything stops but **your documents are still saved**
+- Close Docker Desktop if you want
+
+---
+
+## 💡 Do I Have to Open Terminal Every Time?
+
+**Short answer: YES, you need the terminal to start the containers.**
+
+**Why?** The terminal is how you tell Docker to start the services. But here's the good news:
+
+- You only type one command: `docker-compose up`
+- Copy-paste it if you want (no typing needed)
+- Takes 10 seconds
+- After that, everything works in your browser
+
+### Alternative (Advanced)
+If you really hate opening the terminal, we can create a **batch file** (Windows) or **shell script** (Mac/Linux) that you can double-click to start everything automatically. Ask your developer if you want this.
+
+---
+
+## ❓ Quick Reference Card
+
+### First Time Setup
+```
+1. Install Docker Desktop
+2. Get OpenAI API key
+3. Open Terminal
+4. git clone ...
+5. Create .env file
+6. docker-compose up
+7. Open http://localhost:3000
+```
+
+### Every Time After That
+```
+1. Open Docker Desktop
+2. Open Terminal
+3. cd kuldeep-chatbot
+4. docker-compose up
+5. Open http://localhost:3000
+6. Use the app
+7. Press CTRL+C to stop
+```
+
+---
+
+## 🗂️ Your Folder Structure After Setup
+
+```
+Your Computer
+├── Desktop/
+│   └── kuldeep-chatbot/        ← The cloned repo folder
+│       ├── .env                 ← Your API key (created once)
+│       ├── docker-compose.yml
+│       ├── knowledge_base/       ← Your uploaded documents
+│       ├── chroma_db/            ← Vector embeddings
+│       └── ... (other files)
+```
+
+**The folder stays on your computer** after setup. It's not temporary.
+
+---
+
+## ✅ Summary
+
+| Task | How Often | Steps |
+|------|-----------|-------|
+| Install Docker | Once (first time) | 1 click to install |
+| Get API key | Once (first time) | Copy-paste key |
+| Clone repo | Once (first time) | Copy-paste command |
+| Create .env | Once (first time) | Copy-paste command |
+| **Start the app** | **Every time** | **Open Docker + Terminal + 1 command** |
+| Use the chatbot | Every time | Browser only (no terminal) |
+| Stop the app | Every time | CTRL+C in terminal |
+
+---
+
+## ⚠️ Important: Don't Delete the Folder!
+
+After you clone the project, the `kuldeep-chatbot` folder is created on your computer.
+
+**Do NOT delete it** unless you want to lose:
+- Your uploaded documents
+- Your chat history
+- The entire project
+
+If you want to delete everything and start fresh:
+```bash
+docker-compose down -v
+```
+
+This deletes the Docker containers but NOT the folder. To fully delete everything, then delete the folder manually.
+
+---
+
+## 🎯 Real-World Workflow
+
+**Day 1:** Do all the setup steps once
+
+**Day 2:**
+- Open Docker Desktop
+- Open Terminal
+- Type: `cd kuldeep-chatbot`
+- Type: `docker-compose up`
+- Open http://localhost:3000
+- Use the chatbot
+- Done!
+
+**Day 3:**
+- Same as Day 2 (open Docker → Terminal → 1 command → Browser)
+
+**Day 100:**
+- Same as Day 2 (it never changes!)
 
 ---
 
