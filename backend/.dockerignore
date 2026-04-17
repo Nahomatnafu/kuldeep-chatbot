@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+faiss_db/
+chroma_db/
+knowledge_base/
