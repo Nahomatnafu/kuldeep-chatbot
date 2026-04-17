@@ -281,7 +281,11 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
         texts     = [c.page_content for c in chunks]
         metadatas = [{"source": str(filepath), **{k: v for k, v in c.metadata.items() if isinstance(v, (str, int, float, bool))}} for c in chunks]
 
-        collection.add(ids=ids, documents=texts, metadatas=metadatas)
+        # Send in batches to stay under OpenAI's 300k token-per-request limit.
+        EMBED_BATCH = 100
+        for start in range(0, len(ids), EMBED_BATCH):
+            end = start + EMBED_BATCH
+            collection.add(ids=ids[start:end], documents=texts[start:end], metadatas=metadatas[start:end])
 
         return True, f"Ingested {len(chunks)} chunks.", len(chunks)
     except Exception as exc:
@@ -792,7 +796,7 @@ def upload_document():
         allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
         return jsonify({"success": False, "message": f"Unsupported file type. Allowed: {allowed}"}), 400
 
-    filename = secure_filename(file.filename)
+    filename = secure_filename(Path(file.filename).name)
     filepath = KNOWLEDGE_BASE_DIR / filename
     file.save(filepath)
 

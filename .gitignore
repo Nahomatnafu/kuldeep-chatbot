@@ -22,8 +22,10 @@ backend/chroma_db/
 backend/faiss_db/
 chroma_db/
 
-# Uploaded PDFs (user data, not source code)
+# Uploaded PDFs and document registry (user data, rebuilt locally)
 backend/knowledge_base/*.pdf
+knowledge_base/*.pdf
+knowledge_base/documents.json
 
 # Node.js / Next.js
 frontend/node_modules/
