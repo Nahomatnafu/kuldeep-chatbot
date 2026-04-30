@@ -43,7 +43,7 @@ load_dotenv()
 KNOWLEDGE_BASE_DIR = Path("knowledge_base")
 CHROMA_DB_DIR      = "chroma_db"
 DOCUMENTS_JSON     = Path("knowledge_base/documents.json")
-MODEL_NAME         = "gpt-3.5-turbo"
+MODEL_NAME         = "gpt-4o-mini"
 NUM_CHUNKS         = 12         # k=12 for broader recall on dense technical documents
 CHUNK_SIZE         = 1000
 CHUNK_OVERLAP      = 200
@@ -158,19 +158,19 @@ If you used none of the chunks, write: SOURCES_USED: none"""
 
 # ── Off-topic guard ───────────────────────────────────────────────────────────
 _GUARD_PROMPT = (
-    "You are a strict classifier. Answer with exactly one word: YES or NO.\n\n"
-    "Question: Does the user's message fall into ANY of these categories?\n"
+    "You are a classifier for a workplace document assistant. "
+    "Answer with exactly one word: YES or NO.\n\n"
+    "Answer YES only if the message is clearly one of these three things:\n"
     "1. A question about the user's own identity or personal life "
     "(e.g. 'What is my name?', 'How old am I?')\n"
-    "2. Pure social small talk with no factual question\n"
-    "3. A request for jokes, stories, poems, or entertainment — even if the "
-    "topic mentioned relates to work (e.g. 'Tell me a joke about manufacturing' → YES)\n"
-    "4. A general knowledge question clearly unrelated to workplace documents, "
-    "manufacturing, equipment, procedures, food safety, or technical operations "
-    "(e.g. 'What is the capital of France?', 'Who won the Super Bowl?')\n\n"
-    "Important: if the user is asking for factual or procedural information that "
-    "COULD plausibly appear in a workplace manual, SOP, or technical document — "
-    "answer NO. But jokes, stories, and entertainment requests are always YES.\n\n"
+    "2. Pure social small talk with no factual question "
+    "(e.g. 'How are you?', 'Good morning')\n"
+    "3. A request for jokes, stories, poems, songs, or other entertainment "
+    "(e.g. 'Tell me a joke', 'Write me a poem')\n\n"
+    "Answer NO for everything else, including any factual, technical, or "
+    "procedural question — even if it seems unrelated to the documents. "
+    "The document system will handle those appropriately on its own.\n\n"
+    "When in doubt, answer NO.\n\n"
     "User message: \"{msg}\"\n\n"
     "Answer (YES or NO):"
 )
@@ -183,24 +183,25 @@ def _is_off_topic(question: str) -> bool:
     Returns True  → block the question and return the canned off-topic reply.
     Returns False → let the full RAG chain handle it normally.
     """
-    # Fast deterministic check for obvious entertainment requests
+    # Fast deterministic check for obvious entertainment requests (whole-word match)
     _lower = question.lower()
     _ENTERTAINMENT_WORDS = ("joke", "jokes", "story", "stories", "poem", "poems",
                             "riddle", "riddles", "sing", "song", "limerick")
-    if any(w in _lower for w in _ENTERTAINMENT_WORDS):
+    if any(re.search(r'\b' + w + r'\b', _lower) for w in _ENTERTAINMENT_WORDS):
         return True
 
     global _guard_llm
     try:
         if _guard_llm is None:
             _guard_llm = ChatOpenAI(
-                model_name="gpt-3.5-turbo",
+                model_name="gpt-4o-mini",
                 temperature=0,
                 max_tokens=3,      # only need "YES" or "NO"
             )
         safe_msg = question.replace('"', "'")
         result   = _guard_llm.invoke(_GUARD_PROMPT.format(msg=safe_msg))
-        return result.content.strip().upper().startswith("YES")
+        raw      = result.content.strip()
+        return raw.upper().startswith("YES")
     except Exception:
         return False   # fail open — let the chain handle edge cases
 
@@ -748,13 +749,14 @@ def chat():
                 "metadata":   {"sources": []},
             })
 
-        # Guard: block personal/off-topic questions BEFORE retrieval runs.
-        # Skip the guard for follow-up messages and pending clarification selections,
-        # since those short inputs depend on prior context.
+        # Guard: block personal/entertainment/small-talk questions BEFORE retrieval.
+        # Still skip when a clarification is pending — the user is replying to a
+        # document-selection prompt, so their short answer ("the first one", "yes")
+        # should never be classified as off-topic.
         session_data = conversation_sessions.get(session_id, {})
         has_history = "memory" in session_data and session_data["memory"].load_memory_variables({}).get("chat_history", "")
         has_pending_clarification = bool(session_data.get("pending_clarification"))
-        if not has_history and not has_pending_clarification and _is_off_topic(message):
+        if not has_pending_clarification and _is_off_topic(message):
             return jsonify({
                 "reply":      "I can only answer questions about the uploaded documents.",
                 "session_id": session_id,

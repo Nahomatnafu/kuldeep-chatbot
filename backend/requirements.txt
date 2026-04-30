@@ -27,3 +27,8 @@ python-dotenv==1.0.1
 werkzeug==3.1.3
 tiktoken==0.9.0
 
+# Evaluation (Ragas — RAG quality metrics)
+# Install in your venv: pip install ragas
+# Provides: faithfulness, answer_relevancy, context_precision, context_recall
+ragas>=0.2.0
+

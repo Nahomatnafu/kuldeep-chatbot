@@ -99,8 +99,19 @@ def ingest_files(file_paths: list[Path]) -> None:
     registry   = load_registry()
     all_chunks = []
 
+    # Open the store now (if it exists) so we can delete stale vectors per file
+    # before re-ingesting — prevents duplicate chunks on repeated runs.
+    existing_store = (
+        Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embeddings)
+        if os.path.exists(CHROMA_DB_DIR)
+        else None
+    )
+
     for filepath in file_paths:
         print(f"📄  Loading: {filepath.name}")
+        # Remove any existing vectors for this file before re-ingesting
+        if existing_store is not None:
+            existing_store.delete(where={"source": str(filepath)})
         docs   = _load_docs(filepath)
         chunks = splitter.split_documents(docs)
         all_chunks.extend(chunks)
@@ -116,9 +127,8 @@ def ingest_files(file_paths: list[Path]) -> None:
 
     print(f"\n🔧  Embedding {len(all_chunks)} total chunks into Chroma DB …")
 
-    if os.path.exists(CHROMA_DB_DIR):
-        store = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embeddings)
-        store.add_documents(all_chunks)
+    if existing_store is not None:
+        existing_store.add_documents(all_chunks)
     else:
         Chroma.from_documents(all_chunks, embedding=embeddings, persist_directory=CHROMA_DB_DIR)
 

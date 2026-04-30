@@ -1,0 +1,604 @@
+{
+  "timestamp": "20260429_173535",
+  "ragas_scores": {
+    "faithfulness": 0.9074399456752398,
+    "answer_relevancy": 0.9476901115831955,
+    "context_precision": 0.9411764705279412,
+    "context_recall": 0.7696078431372548
+  },
+  "test_results": [
+    {
+      "id": "REG-01",
+      "category": "food-safety",
+      "question": "What hand drying provisions are required for food employees under the FDA Food Code?",
+      "ground_truth": "The FDA Food Code requires provisions for hand drying so that employees will not dry their hands on their clothing or other unclean materials. Wet hands transfer bacteria more readily than dry hands, and the method of drying is a critical factor in reducing cross-contamination. Air knife technology has been found to be equivalent to existing heated-air hand drying devices, but may not accommodate drying of forearms or prosthetic devices, requiring an alternate drying means in those cases.",
+      "answer": "**Hand Drying Provisions Required for Food Employees**\n\n- **Hand Drying Methods**: Each handwashing sink or group of adjacent handwashing sinks must be provided with one of the following:\n  1. Individual, disposable towels.\n  2. A continuous towel system that supplies the user with a clean towel.\n  3. A heated-air hand drying device.\n  4. A hand drying device that employs an air-knife system delivering high velocity, pressurized air at ambient temperatures. \n\n- **Importance of Drying**: Provisions must ensure that employees do not dry their hands on clothing or unclean materials, as wet hands transfer bacteria more readily than dry hands (Chunk 2).\n\n- **Special Considerations**: If food employees are fitted with a surrogate prosthetic device or are expected to wash their forearms, an alternate means for drying these areas must be provided, as air knife technology may not accommodate such needs (Chunks 1, 3).",
+      "contexts": [
+        "Handwashing Sinks  6-301.10 Minimum Number.  Refer to the public health reason for § 5-203.11.  6-301.11 Handwashing Cleanser, Availability.  Hand cleanser must always be present to aid in reducing microorganisms and  particulate matter found on hands.  6-301.12 Hand Drying Provision.  Provisions must be provided for hand drying so that employees will not dry their hands   on their clothing or other unclean materials.   It is known that wet hands transfer bacteria more readily than dry hands. The residual   moisture found on the hands after washing allows for bacterial and viral transfer to food   or solid surfaces by touch. The method in which hands are dried is a critical factor in  reducing chances of cross-contamination by hands to food and environmental surfaces   (Patrick et al., (1997)).   With regard to the addition of air knife technology for hand drying, data reviewed by   FDA scientists at the FDA’s National Center for Food Safety Technology (Moffitt Center)",
+        "6-301.12 Hand Drying Provision.  Each HANDWASHING SINK or group of adjacent HANDWASHING SINKS shall be provided with:  (A) Individual, disposable towels; Pf (B) A continuous towel system that supplies the user with a clean towel; Pf or ( C) A heated-air hand drying device; Pf or ( D) A hand drying device that employs an air-knife system that delivers high velocity, pressurized air at ambient temperatures. Pf  6-301.13 Handwashing Aids and Devices, Use Restrictions.  A sink used for FOOD preparation or UTENSIL washing, or a service  sink or curbed cleaning facility used for the disposal of mop water  or similar wastes, may not be provided with the handwashing aids  and devices required for a HANDWASHING SINK as specified under  §§ 6-301.11 and 6-301.12 and ¶ 5-501.16(C). 6-301.14 Handwashing Signage.  A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be clearly visible to FOOD EMPLOYEES."
+      ],
+      "sources": [
+        {
+          "file": "fda_food_code_2019.pdf",
+          "full_snippet": "Handwashing Sinks  6-301.10 Minimum Number.  Refer to the public health reason for § 5-203.11.  6-301.11 Handwashing Cleanser, Availability.  Hand cleanser must always be present to aid in reducing microorganisms and  particulate matter found on hands.  6-301.12 Hand Drying Provision.  Provisions must be provided for hand drying so that employees will not dry their hands   on their clothing or other unclean materials.   It is known that wet hands transfer bacteria more readily than dry hands. The residual   moisture found on the hands after washing allows for bacterial and viral transfer to food   or solid surfaces by touch. The method in which hands are dried is a critical factor in  reducing chances of cross-contamination by hands to food and environmental surfaces   (Patrick et al., (1997)).   With regard to the addition of air knife technology for hand drying, data reviewed by   FDA scientists at the FDA’s National Center for Food Safety Technology (Moffitt Center)",
+          "id": 1,
+          "page": 590,
+          "snippet": "Handwashing Sinks  6-301.10 Minimum Number.  Refer to the public health reason for § 5-203.11.  6-301.11 Handwashing Cleanser, Availability.  Hand cle..."
+        },
+        {
+          "file": "fda_food_code_2019.pdf",
+          "full_snippet": "6-301.12 Hand Drying Provision.  Each HANDWASHING SINK or group of adjacent HANDWASHING SINKS shall be provided with:  (A) Individual, disposable towels; Pf (B) A continuous towel system that supplies the user with a clean towel; Pf or ( C) A heated-air hand drying device; Pf or ( D) A hand drying device that employs an air-knife system that delivers high velocity, pressurized air at ambient temperatures. Pf  6-301.13 Handwashing Aids and Devices, Use Restrictions.  A sink used for FOOD preparation or UTENSIL washing, or a service  sink or curbed cleaning facility used for the disposal of mop water  or similar wastes, may not be provided with the handwashing aids  and devices required for a HANDWASHING SINK as specified under  §§ 6-301.11 and 6-301.12 and ¶ 5-501.16(C). 6-301.14 Handwashing Signage.  A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be clearly visible to FOOD EMPLOYEES.",
+          "id": 2,
+          "page": 215,
+          "snippet": "6-301.12 Hand Drying Provision.  Each HANDWASHING SINK or group of adjacent HANDWASHING SINKS shall be provided with:  (A) Individual, disposable towe..."
+        }
+      ],
+      "response_time_s": 10.32,
+      "error": null
+    },
+    {
+      "id": "REG-02",
+      "category": "food-safety",
+      "question": "What handwashing signage does the FDA Food Code require at food establishments?",
+      "ground_truth": "The FDA Food Code requires a sign or poster to be posted at handwashing sinks to remind food employees to wash their hands.",
+      "answer": "**Handwashing Signage Requirements**\n\nThe **FDA Food Code** requires that:\n- A **sign or poster** notifying **food employees** to wash their hands must be provided at all **handwashing sinks** used by food employees.\n- The signage must be **clearly visible** to food employees (Chunks 1, 2, 8).",
+      "contexts": [
+        "A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be clearly visible to FOOD EMPLOYEES.  6-301.20 Disposable Towels, Waste Receptacle.  A HANDWASHING SINK or group of adjacent HANDWASHING SINKS that  is provided with disposable towels shall be provided with a waste  receptacle as specified under ¶ 5-501.16(C).  Toilets and Urinals  6-302.10 Minimum Number.  Toilets and urinals shall be provided as specified under § 5-203.12.  185",
+        "fitted with a surrogate prosthetic device, the food establishment would need to provide  an alternate means for drying of the arms and certain prosthetic devices.   6-301.14 Handwashing Signage.  A sign or poster is required to remind food employees to wash their hands.  6-301.20 Disposable Towels, Waste Receptacle.  Waste receptacles at handwashing sinks are required for the collection of disposable  towels so that the paper waste will be contained, will not contact food directly or  indirectly, and will not become an attractant for insects or rodents.  Annex 3 – Public Health Reasons/Administrative Guidelines  534"
+      ],
+      "sources": [
+        {
+          "file": "fda_food_code_2019.pdf",
+          "full_snippet": "A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be clearly visible to FOOD EMPLOYEES.  6-301.20 Disposable Towels, Waste Receptacle.  A HANDWASHING SINK or group of adjacent HANDWASHING SINKS that  is provided with disposable towels shall be provided with a waste  receptacle as specified under ¶ 5-501.16(C).  Toilets and Urinals  6-302.10 Minimum Number.  Toilets and urinals shall be provided as specified under § 5-203.12.  185",
+          "id": 1,
+          "page": 215,
+          "snippet": "A sign or poster that notifies FOOD EMPLOYEES to wash their hands  shall be provided at all HANDWASHING SINKS used by FOOD EM PLOYEES and shall be cle..."
+        },
+        {
+          "file": "fda_food_code_2019.pdf",
+          "full_snippet": "fitted with a surrogate prosthetic device, the food establishment would need to provide  an alternate means for drying of the arms and certain prosthetic devices.   6-301.14 Handwashing Signage.  A sign or poster is required to remind food employees to wash their hands.  6-301.20 Disposable Towels, Waste Receptacle.  Waste receptacles at handwashing sinks are required for the collection of disposable  towels so that the paper waste will be contained, will not contact food directly or  indirectly, and will not become an attractant for insects or rodents.  Annex 3 – Public Health Reasons/Administrative Guidelines  534",
+          "id": 2,
+          "page": 590,
+          "snippet": "fitted with a surrogate prosthetic device, the food establishment would need to provide  an alternate means for drying of the arms and certain prosthe..."
+        }
+      ],
+      "response_time_s": 5.91,
+      "error": null
+    },
+    {
+      "id": "REG-03",
+      "category": "manufacturing",
+      "question": "What are the three distinct zones of a fatigue fracture?",
+      "ground_truth": "The three distinct zones of a fatigue fracture are the point of crack initiation, the area of crack propagation during service, and the remaining area of cross-section showing signs of sudden breakage.",
+      "answer": "**Three Distinct Zones of a Fatigue Fracture:**\n\n1. **Point of Crack Initiation**: This is where the crack originates, often due to notches, material defects, or surface blemishes.\n2. **Area of Crack Propagation**: Characterized by circular ring-like scratch marks, this area shows the progression of the crack during service.\n3. **Remaining Area of Cross-Section**: This area exhibits signs of sudden breakage when the cross-sectional area becomes too small to sustain the stress.",
+      "contexts": [
+        "either the  alternating or varying stress, it gets fatigued and fails even though the magnitude of such stresses may be far lower as compared to its strength. Fortunately, there is a level of alternating and varying stress, which the material is able to withstand without failure even if it is subjected to infinite number of cycles. This is called the ENDURANCE LIMIT. A designer ensures that a component subject to fatigue in service is so designed that its actual stress level remains below the endurance limit. The visual examination of a fatigue fracture shows three distinct zones. These are: (i) The point of crack initiation, it is the point from where the crack may have originated e.g. a notch like a key way or some materials defect like an impurity, or even a surface blemish. (ii) The area of crack propagation during service. This area is usually characterised by circular ring-like scratch marks with point of crack initiation as the centre."
+      ],
+      "sources": [
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "either the  alternating or varying stress, it gets fatigued and fails even though the magnitude of such stresses may be far lower as compared to its strength. Fortunately, there is a level of alternating and varying stress, which the material is able to withstand without failure even if it is subjected to infinite number of cycles. This is called the ENDURANCE LIMIT. A designer ensures that a component subject to fatigue in service is so designed that its actual stress level remains below the endurance limit. The visual examination of a fatigue fracture shows three distinct zones. These are: (i) The point of crack initiation, it is the point from where the crack may have originated e.g. a notch like a key way or some materials defect like an impurity, or even a surface blemish. (ii) The area of crack propagation during service. This area is usually characterised by circular ring-like scratch marks with point of crack initiation as the centre.",
+          "id": 1,
+          "page": 24,
+          "snippet": "either the  alternating or varying stress, it gets fatigued and fails even though the magnitude of such stresses may be far lower as compared to its s..."
+        }
+      ],
+      "response_time_s": 5.83,
+      "error": null
+    },
+    {
+      "id": "REG-04",
+      "category": "manufacturing",
+      "question": "What is creep failure?",
+      "ground_truth": "Creep failure occurs when materials deform plastically at a very slow rate under steady loads, especially at high temperatures, leading to ultimate failure over time. This type of failure is common in components like stays in boilers and turbine blades.",
+      "answer": "**Creep Failure**\n\n- **Creep failure** occurs when materials fail under steady loads that are within their strength limits, particularly over long periods and at high temperatures.\n- It is characterized by **plastic deformation** of the material at a very slow rate, which can lead to ultimate failure over time.\n- Common examples of components that may experience creep failure include **stays in boilers** and **turbine blades**.",
+      "contexts": [
+        "(ii) The area of crack propagation during service. This area is usually characterised by circular ring-like scratch marks with point of crack initiation as the centre. (iii) Remaining area of cross-section showing signs of sudden breakage. As a result of crack propagation with time, a stage comes, when the remaining cross-sectional area becomes too small to sustain the stress and fractures suddenly. CREEP FAILURE Failure of material can take place even under steady loads within the strength of the material. This happens if the subjected components remain under steady loads for a very longtime especially when they are subjected to high temperature conditions. Some common examples are stays in boilers, steam",
+        "10 Manufacturing Processes turbine blades, furnace parts etc. Such failures are termed creep-failures due to the fact the material continues to deform plastically under such conditions although at a very very slow rate. But over long periods of time, the effect of creep can become appreciable resulting in ultimate failure of the component. QUESTIONS 1. Draw a stress-strain curve for a ductile material. In what respects, a similar curve for a brittle material will be different? 2. What do you understand by the following terms ? (i) Limit of proportionality ( ii) Yield-point (iii) Ultimate tensile strength. 3. Explain the meaning of the following terms: (i) Stiffness, ( ii) Toughness, and ( iii) Hardness. 4. Differentiate between failure of material due to fatigue and creep. 5. What do you understand by percentage elongation? What does a high percentage elongation value signify? 6. Name three common ‘‘hardness’’ tests. Describe anyone of them."
+      ],
+      "sources": [
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "(ii) The area of crack propagation during service. This area is usually characterised by circular ring-like scratch marks with point of crack initiation as the centre. (iii) Remaining area of cross-section showing signs of sudden breakage. As a result of crack propagation with time, a stage comes, when the remaining cross-sectional area becomes too small to sustain the stress and fractures suddenly. CREEP FAILURE Failure of material can take place even under steady loads within the strength of the material. This happens if the subjected components remain under steady loads for a very longtime especially when they are subjected to high temperature conditions. Some common examples are stays in boilers, steam",
+          "id": 1,
+          "page": 24,
+          "snippet": "(ii) The area of crack propagation during service. This area is usually characterised by circular ring-like scratch marks with point of crack initiati..."
+        },
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "10 Manufacturing Processes turbine blades, furnace parts etc. Such failures are termed creep-failures due to the fact the material continues to deform plastically under such conditions although at a very very slow rate. But over long periods of time, the effect of creep can become appreciable resulting in ultimate failure of the component. QUESTIONS 1. Draw a stress-strain curve for a ductile material. In what respects, a similar curve for a brittle material will be different? 2. What do you understand by the following terms ? (i) Limit of proportionality ( ii) Yield-point (iii) Ultimate tensile strength. 3. Explain the meaning of the following terms: (i) Stiffness, ( ii) Toughness, and ( iii) Hardness. 4. Differentiate between failure of material due to fatigue and creep. 5. What do you understand by percentage elongation? What does a high percentage elongation value signify? 6. Name three common ‘‘hardness’’ tests. Describe anyone of them.",
+          "id": 2,
+          "page": 25,
+          "snippet": "10 Manufacturing Processes turbine blades, furnace parts etc. Such failures are termed creep-failures due to the fact the material continues to deform..."
+        }
+      ],
+      "response_time_s": 6.36,
+      "error": null
+    },
+    {
+      "id": "REG-05",
+      "category": "manufacturing",
+      "question": "What are some benefits of using alloy steel?",
+      "ground_truth": "Alloying in steels can lead to hardening by heat treatment, corrosion resistance, red hardness in cutting tools, increased strength and toughness, resistance to grain growth, and oxidation at high temperatures. The main alloying elements used in alloy steels are chromium, nickel, tungsten, molybdenum, vanadium, cobalt, manganese, and silicon.",
+      "answer": "I can only answer questions about the uploaded documents.",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 2.06,
+      "error": null
+    },
+    {
+      "id": "REG-06",
+      "category": "manufacturing",
+      "question": "What are the steps for heat treatment?",
+      "ground_truth": "Heat treatment of carbon steels involves three basic steps: heating the metal to a specific temperature, soaking it at that temperature for uniformity, and cooling it at a controlled rate in water, oil, or air. Carbon steels undergo four basic heat-treatment processes: annealing, normalizing, hardening, and tempering.",
+      "answer": "**Steps for Heat Treatment**\n\n1. **Heat the metal/alloy** to a predetermined temperature, which depends on the actual composition of carbon steel (i.e., carbon percentage).\n2. **Soak or hold the metal/alloy** at that temperature for a specified duration to ensure uniform temperature across the entire cross-section.\n3. **Cool the metal/alloy** at a predetermined rate in a suitable medium such as water, oil, or air. The rate of cooling is the most important factor.",
+      "contexts": [
+        "Ferrous Materials 17 HEAT TREATMENT OF CARBON STEELS Object of heat treatment. Metals and alloys are heat treated to improve their mechanical properties, to relieve internal stresses or to improve their machinability. The properties of carbon steels can also be altered significantly by subjecting them to heat treatment processes. Heat treatment consists of three basic steps: (i) Heat the metal/alloy to a predetermined temperature. This temperature will, ideally, depend upon the actual composition of carbon steel ( i.e. carbon percentage), (ii) Soaking or holding the metal/alloy at that temperature for some time, so that the temperature across the entire cross-section becomes uniform, and (iii) Cooling the metal/alloy at a predetermined rate in a suitable medium like water, oil or air. The rate of cooling is the most important factor. Kinds of Heat Treatments Given to Carbon Steels Carbon steels are subjected to the following four basic heat-treatment processes: (i) Annealing,"
+      ],
+      "sources": [
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "Ferrous Materials 17 HEAT TREATMENT OF CARBON STEELS Object of heat treatment. Metals and alloys are heat treated to improve their mechanical properties, to relieve internal stresses or to improve their machinability. The properties of carbon steels can also be altered significantly by subjecting them to heat treatment processes. Heat treatment consists of three basic steps: (i) Heat the metal/alloy to a predetermined temperature. This temperature will, ideally, depend upon the actual composition of carbon steel ( i.e. carbon percentage), (ii) Soaking or holding the metal/alloy at that temperature for some time, so that the temperature across the entire cross-section becomes uniform, and (iii) Cooling the metal/alloy at a predetermined rate in a suitable medium like water, oil or air. The rate of cooling is the most important factor. Kinds of Heat Treatments Given to Carbon Steels Carbon steels are subjected to the following four basic heat-treatment processes: (i) Annealing,",
+          "id": 1,
+          "page": 32,
+          "snippet": "Ferrous Materials 17 HEAT TREATMENT OF CARBON STEELS Object of heat treatment. Metals and alloys are heat treated to improve their mechanical properti..."
+        }
+      ],
+      "response_time_s": 7.18,
+      "error": null
+    },
+    {
+      "id": "REG-07",
+      "category": "machining",
+      "question": "What are the Machine Shop Rules?",
+      "ground_truth": "Students are not permitted to work without a Supervisor in the Machine Shop. Students must scan their I.D. card upon entering and display their printed label in a visible location. When working in the shop, two people must be present at all times. Safety glasses must be worn at all times; tinted or sunglasses are not permitted. No sandals or open-toe shoes are allowed. Students must not wear loose clothing or jewelry, and long hair must be tied back.",
+      "answer": "I found relevant content in multiple documents: \"basic machine tool operations aug 2017\" and \"autodesk cncbook\". Which one are you asking about, or would you like me to check all relevant documents?",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 3.07,
+      "error": null
+    },
+    {
+      "id": "REG-08",
+      "category": "machining",
+      "question": "How do I clean a lathe?",
+      "ground_truth": "A lathe should be cleaned after each work period. Remove chips with a paint brush, not your hand, and wipe all painted surfaces with a soft cloth. Move the tailstock to the extreme right and wipe remaining oil, chips and dirt from machined surfaces; do not use compressed air as flying chips are dangerous. The lead screw can be cleaned by running the lathe at slow speed and feeding a piece of cord along the threads, but never wrap the cord around your hand.",
+      "answer": "**Steps to Clean a Lathe**\n\n1. **Turn off power** to the machine before cleaning to avoid accidental start-up.\n2. **Remove cutting tools** such as drill bits and lathe tools to reduce the risk of cuts.\n3. **Clean chips** from the tool and chip pans; recycle clean chips where possible.\n4. **Use a paint brush** to remove chips — do NOT use your hands.\n5. **Wipe all painted surfaces** with a soft cloth.\n6. **Move the tailstock** to the extreme right and wipe remaining oil, chips, and dirt from machined surfaces.\n7. **Clean the lead screw** by adjusting the lathe to rotate at a slow speed and using a piece of cord, ensuring not to wrap the cord around your hand.\n8. **Put a light coat of way oil** on the machine ways.\n9. **Sweep the floor** in the work area.\n10. **Report any missing, broken, or damaged tools** to shop staff.\n\n**Warnings**\n- Do NOT use compressed air to remove chips; it can cause injury.\n- Chips and shavings are sharp; use a cleaning brush, not a dust brush.",
+      "contexts": [
+        "HOW TO CLEAN THE LATHE    1. A lathe should be cleaned after each work period. Remove chips with a paint brush –  NOT YOUR HAND.    2. Wipe all painted surfaces with a soft cloth.    3. To complete the job, move the tailstock to the extreme right and use a soft cloth to wipe  the remaining oil, chips and dirt from the machined surfaces.  DO NOT USE  COMPRESSED AIR TO REMOVE THE CHIPS. The flying chips are dangerous.  4. The lead screw needs an occasional cleaning too.  This may be done by adjusting the  lathe to rotate at a slow speed and using a piece of cord.  Permit the cord to feed along the  threads.  DO NOT WRAP THE CORD AROUND YOUR HAND because THE  CORD MIGHT CATCH ON THE LEAD SCREW AD CAUSE SERIOUS  INJURY!      LATHE SIZE     Lathe size is determined by the SWING and BED LENGTH.  The swing indicates the largest  diameter of work which can be turned.  The bed length is the entire length of the ways, and should",
+        "Guidelines for Cleaning           1. Turn off power to the machine before cleaning. This will avoid accidentally starting the machine  and injuring yourself.    2. Remove cutting tools. Take out drill bits, mills and remove lathe tools to reduce the chances of  getting cut.    3. Put away all hand tools and other items around the shop.  Keep work area orderly.    4. Clean chips from the tool & the chip pans. Recycle clean chips where possible.    5. Put a light coat of way oil on the machine ways. Ask staff to show you where this oil is kept.    6. Sweep the floor in the area where you have been working.    7. Do not use compressed air unless directed by shop supervisor. Do not blow air into the bearing  surfaces, and do not scatter chips all over the shop. Sometimes a shop vacuum works better than  the air gun.    8. Report missing, broken or damaged tools to shop staff.    9. Spend your last five minutes on general cleaning around the shop. We’re all in this together.      9",
+        "adjustments, and then with the power turned off at the main electrical panel to prevent the  machine from being turned on accidentally.  Replace the guards immediately after the  adjustments have been made.  6. Return all unnecessary tools to the proper storage area.  Remove all other tools from the  immediate work area.  7. Turn the chuck or faceplate by hand to be sure there is no binding or danger of the work  striking any part of the lathe.  8. Make sure that the chuck, driveplate, or faceplate is securely tightened onto the lathe spindle.  9. When removing the chuck, driveplate, or faceplate do not use machine power.  10. When installing the chuck, driveplate, or faceplate do not use machine power.  11. Move the tool bit a safe distance from the collet or chuck when inserting or removing work.  12. Don't run the machine faster than the proper cutting speed – consult a speed and feed table to  determine the best speed.",
+        "accidentally.  31. Do not talk to anyone, nor permit anyone to fool around the machine while you are operating  it.  You are the only one who should turn the machine on or off, or make adjustments to the  lathe while you are operating it.  32. Never attempt to run the chuck on or off the spindle by using power.  It is also a dangerous  practice to stop the lathe by reversing its direction of rotation.  33. You should always be aware of the direction and speed of the carriage or cross-feed before  engaging automatic feed.  34. Do not wrap the cord around your hands when cleaning the lead screw.  Grip it lightly  between the fingers so if it catches on the screw it will slip safely out of your hand.  35. Stop the machine immediately if some odd noise or vibration develops while you are  operating it.  If you cannot find what is causing the trouble, get your instructor.  Under no  condition should the machine be operated until the trouble has been found and corrected."
+      ],
+      "sources": [
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "HOW TO CLEAN THE LATHE    1. A lathe should be cleaned after each work period. Remove chips with a paint brush –  NOT YOUR HAND.    2. Wipe all painted surfaces with a soft cloth.    3. To complete the job, move the tailstock to the extreme right and use a soft cloth to wipe  the remaining oil, chips and dirt from the machined surfaces.  DO NOT USE  COMPRESSED AIR TO REMOVE THE CHIPS. The flying chips are dangerous.  4. The lead screw needs an occasional cleaning too.  This may be done by adjusting the  lathe to rotate at a slow speed and using a piece of cord.  Permit the cord to feed along the  threads.  DO NOT WRAP THE CORD AROUND YOUR HAND because THE  CORD MIGHT CATCH ON THE LEAD SCREW AD CAUSE SERIOUS  INJURY!      LATHE SIZE     Lathe size is determined by the SWING and BED LENGTH.  The swing indicates the largest  diameter of work which can be turned.  The bed length is the entire length of the ways, and should",
+          "id": 1,
+          "page": 63,
+          "snippet": "HOW TO CLEAN THE LATHE    1. A lathe should be cleaned after each work period. Remove chips with a paint brush –  NOT YOUR HAND.    2. Wipe all painte..."
+        },
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "Guidelines for Cleaning           1. Turn off power to the machine before cleaning. This will avoid accidentally starting the machine  and injuring yourself.    2. Remove cutting tools. Take out drill bits, mills and remove lathe tools to reduce the chances of  getting cut.    3. Put away all hand tools and other items around the shop.  Keep work area orderly.    4. Clean chips from the tool & the chip pans. Recycle clean chips where possible.    5. Put a light coat of way oil on the machine ways. Ask staff to show you where this oil is kept.    6. Sweep the floor in the area where you have been working.    7. Do not use compressed air unless directed by shop supervisor. Do not blow air into the bearing  surfaces, and do not scatter chips all over the shop. Sometimes a shop vacuum works better than  the air gun.    8. Report missing, broken or damaged tools to shop staff.    9. Spend your last five minutes on general cleaning around the shop. We’re all in this together.      9",
+          "id": 2,
+          "page": 9,
+          "snippet": "Guidelines for Cleaning           1. Turn off power to the machine before cleaning. This will avoid accidentally starting the machine  and injuring yo..."
+        },
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "adjustments, and then with the power turned off at the main electrical panel to prevent the  machine from being turned on accidentally.  Replace the guards immediately after the  adjustments have been made.  6. Return all unnecessary tools to the proper storage area.  Remove all other tools from the  immediate work area.  7. Turn the chuck or faceplate by hand to be sure there is no binding or danger of the work  striking any part of the lathe.  8. Make sure that the chuck, driveplate, or faceplate is securely tightened onto the lathe spindle.  9. When removing the chuck, driveplate, or faceplate do not use machine power.  10. When installing the chuck, driveplate, or faceplate do not use machine power.  11. Move the tool bit a safe distance from the collet or chuck when inserting or removing work.  12. Don't run the machine faster than the proper cutting speed – consult a speed and feed table to  determine the best speed.",
+          "id": 3,
+          "page": 61,
+          "snippet": "adjustments, and then with the power turned off at the main electrical panel to prevent the  machine from being turned on accidentally.  Replace the g..."
+        },
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "accidentally.  31. Do not talk to anyone, nor permit anyone to fool around the machine while you are operating  it.  You are the only one who should turn the machine on or off, or make adjustments to the  lathe while you are operating it.  32. Never attempt to run the chuck on or off the spindle by using power.  It is also a dangerous  practice to stop the lathe by reversing its direction of rotation.  33. You should always be aware of the direction and speed of the carriage or cross-feed before  engaging automatic feed.  34. Do not wrap the cord around your hands when cleaning the lead screw.  Grip it lightly  between the fingers so if it catches on the screw it will slip safely out of your hand.  35. Stop the machine immediately if some odd noise or vibration develops while you are  operating it.  If you cannot find what is causing the trouble, get your instructor.  Under no  condition should the machine be operated until the trouble has been found and corrected.",
+          "id": 4,
+          "page": 62,
+          "snippet": "accidentally.  31. Do not talk to anyone, nor permit anyone to fool around the machine while you are operating  it.  You are the only one who should t..."
+        }
+      ],
+      "response_time_s": 14.01,
+      "error": null
+    },
+    {
+      "id": "REG-09",
+      "category": "machining",
+      "question": "What is Skip Lot sampling?",
+      "ground_truth": "Skip Lot sampling means that only a fraction of the submitted lots are inspected. This mode of sampling is of the cost-saving variety in terms of time and effort, but should only be used when it has been demonstrated that the quality of the submitted product is very good.",
+      "answer": "**Definition of Skip Lot Sampling**  \n- **Skip Lot Sampling** means that only a fraction of the submitted lots are inspected.  \n- It is a cost-saving method in terms of time and effort.  \n- This sampling method should only be used when the quality of the submitted product is very good.\n\n**Implementation Steps**  \n1. Design a single sampling plan by specifying the alpha and beta risks and the consumer/producer's risks (this is called \"the reference sampling plan\").  \n2. Start with normal lot-by-lot inspection using the reference plan.  \n3. When a pre-specified number, **i**, of consecutive lots are accepted, switch to inspecting only a fraction **f** of the lots.  \n4. The selection of the members of that fraction is done at random.  \n5. If a lot is rejected, return to normal inspection.\n\n**Key Parameters**  \n- **i**: Clearance number (a positive integer).  \n- **f**: Sampling fraction (0 < f < 1). If f = 1, there is no longer skip-lot sampling.  \n- The average sample number (ASN) of skip-lot sampling is smaller than that of the reference sampling plan.\n\n**When to Use**  \n- Skip-lot sampling is preferred when the quality of the submitted lots is excellent and the supplier has a proven track record.",
+      "contexts": [
+        "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM] Illustration of a skip lot sampling plan An illustration of a a skip-lot sampling plan is given below. ASN of skip-lot sampling plan An important property of skip-lot sampling plans is the average sample number (ASN ). The ASN of a skip-lot sampling plan is ASNskip-lot = (F)(ASNreference) where F is defined by Therefore, since 0 < F  < 1, it follows that the ASN  of skip-lot sampling is smaller than the ASN  of the reference sampling plan. In summary, skip-lot sampling is preferred when the quality of the submitted lots is excellent and the supplier can demonstrate a proven track record.",
+        "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM]   6. Process or Product Monitoring and Control  6.2. Test Product for Acceptability: Lot Acceptance Sampling   6.2.7. What is Skip Lot Sampling? Skip Lot Sampling Skip Lot sampling means that only a fraction of the submitted lots are inspected. This mode of sampling is of the cost-saving variety in terms of time and effort. However skip-lot sampling should only be used when it has been demonstrated that the quality of the submitted product is very good. Implementation of skip-lot sampling plan A skip-lot sampling plan is implemented as follows: 1. Design a single sampling plan  by specifying the alpha and beta risks and the consumer/producer's risks. This plan is called \"the reference sampling plan\". 2. Start with normal lot-by-lot inspection, using the reference plan. 3. When a pre-specified number, i , of consecutive lots are"
+      ],
+      "sources": [
+        {
+          "file": "processes_definitions_handbook.pdf",
+          "full_snippet": "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM] Illustration of a skip lot sampling plan An illustration of a a skip-lot sampling plan is given below. ASN of skip-lot sampling plan An important property of skip-lot sampling plans is the average sample number (ASN ). The ASN of a skip-lot sampling plan is ASNskip-lot = (F)(ASNreference) where F is defined by Therefore, since 0 < F  < 1, it follows that the ASN  of skip-lot sampling is smaller than the ASN  of the reference sampling plan. In summary, skip-lot sampling is preferred when the quality of the submitted lots is excellent and the supplier can demonstrate a proven track record.",
+          "id": 1,
+          "page": 44,
+          "snippet": "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM] Illustration of a skip lot samp..."
+        },
+        {
+          "file": "processes_definitions_handbook.pdf",
+          "full_snippet": "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM]   6. Process or Product Monitoring and Control  6.2. Test Product for Acceptability: Lot Acceptance Sampling   6.2.7. What is Skip Lot Sampling? Skip Lot Sampling Skip Lot sampling means that only a fraction of the submitted lots are inspected. This mode of sampling is of the cost-saving variety in terms of time and effort. However skip-lot sampling should only be used when it has been demonstrated that the quality of the submitted product is very good. Implementation of skip-lot sampling plan A skip-lot sampling plan is implemented as follows: 1. Design a single sampling plan  by specifying the alpha and beta risks and the consumer/producer's risks. This plan is called \"the reference sampling plan\". 2. Start with normal lot-by-lot inspection, using the reference plan. 3. When a pre-specified number, i , of consecutive lots are",
+          "id": 2,
+          "page": 43,
+          "snippet": "6.2.7. What is Skip Lot Sampling? http://www.itl.nist.gov/div898/handbook/pmc/section2/pmc27.htm[6/27/2012 2:35:50 PM]   6. Process or Product Monitor..."
+        }
+      ],
+      "response_time_s": 8.73,
+      "error": null
+    },
+    {
+      "id": "REG-10",
+      "category": "machining",
+      "question": "What does laying out mean and what tools are used for layout tools. Explain in a simple way.",
+      "ground_truth": "Laying out is the term used to describe the locating and marking out of lines, circles, arcs and points for drilling holes. These lines and reference points on the metal show the machinist where to machine. The tools used for this work are known as layout tools.",
+      "answer": "**Laying Out Definition**  \n**Laying out** refers to the process of locating and marking lines, circles, arcs, and points on metal for drilling holes. These markings guide the machinist on where to machine.\n\n**Layout Tools**  \nThe tools used for this work are known as **layout tools**, which include many common hand tools. The accuracy of the layout job depends on the proper and careful use of these tools.\n\n**Layout Dye**  \nTo enhance visibility of layout lines on shiny metal, **layout dye** is used. This blue fluid provides excellent contrast against the metal surface. It is important to remove all grease and oil before applying the dye for proper adherence.",
+      "contexts": [
+        "LAYOUT WORK     LAYING OUT is the term used to describe  the locating and marking out of lines, circles,  arcs and points for drilling holes.  These lines  and reference points on the metal show the  machinist where to machine.   The tools used for this work are known as  LAYOUT TOOLS.  Many common hand tools  fall into this category.  The accuracy of the job  will depend upon the proper and careful use of  these tools.      Making Lines on Metal   The shiny finish of metal makes it difficult  to distinguish the layout lines from the metal.   LAYOUT DYE, Fig. 6-1, is probably the easiest  to use of the many coating devised to make the  lines stand out better.  This blue colored fluid,  when applied to the metal, offers an excellent  contrast between the metal and the layout lines.   All grease and oil must be removed before  applying the dye, otherwise it will not adhere  properly.  47",
+        "Steps in Making a Layout    Each layout job has its peculiarities and requires some planning before the operation can be  started.  Fig. 6-19 shows a typical job.    1. Study the drawings carefully.  2. Cut the stock to size and remove all burrs and sharp edges.  3. Clean the work surface of all oil and grease and apply layout dye.  4. Locate and scribe a REFERENCE or BASE LINE.  Make all of your measurements from  this line.  If the material has one true edge, it can be used in place of the reference line.  5. Locate the center points of all circles and arcs.  6. Use the PRICK PUNCH, Fig. 6-20, to mark the point where the center lines intersect.   The sharp point (30 to 60 deg.) of this punch makes it easy to locate this position.  After  the prick punch mark has been checked and found on center, it is enlarged with the  CENTER PUNCH, Fig. 6-20.  7. Using the divider or trammel, scribe in all circles and arcs."
+      ],
+      "sources": [
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "LAYOUT WORK     LAYING OUT is the term used to describe  the locating and marking out of lines, circles,  arcs and points for drilling holes.  These lines  and reference points on the metal show the  machinist where to machine.   The tools used for this work are known as  LAYOUT TOOLS.  Many common hand tools  fall into this category.  The accuracy of the job  will depend upon the proper and careful use of  these tools.      Making Lines on Metal   The shiny finish of metal makes it difficult  to distinguish the layout lines from the metal.   LAYOUT DYE, Fig. 6-1, is probably the easiest  to use of the many coating devised to make the  lines stand out better.  This blue colored fluid,  when applied to the metal, offers an excellent  contrast between the metal and the layout lines.   All grease and oil must be removed before  applying the dye, otherwise it will not adhere  properly.  47",
+          "id": 1,
+          "page": 47,
+          "snippet": "LAYOUT WORK     LAYING OUT is the term used to describe  the locating and marking out of lines, circles,  arcs and points for drilling holes.  These l..."
+        },
+        {
+          "file": "basic_machine_tool_operations_aug_2017.pdf",
+          "full_snippet": "Steps in Making a Layout    Each layout job has its peculiarities and requires some planning before the operation can be  started.  Fig. 6-19 shows a typical job.    1. Study the drawings carefully.  2. Cut the stock to size and remove all burrs and sharp edges.  3. Clean the work surface of all oil and grease and apply layout dye.  4. Locate and scribe a REFERENCE or BASE LINE.  Make all of your measurements from  this line.  If the material has one true edge, it can be used in place of the reference line.  5. Locate the center points of all circles and arcs.  6. Use the PRICK PUNCH, Fig. 6-20, to mark the point where the center lines intersect.   The sharp point (30 to 60 deg.) of this punch makes it easy to locate this position.  After  the prick punch mark has been checked and found on center, it is enlarged with the  CENTER PUNCH, Fig. 6-20.  7. Using the divider or trammel, scribe in all circles and arcs.",
+          "id": 2,
+          "page": 49,
+          "snippet": "Steps in Making a Layout    Each layout job has its peculiarities and requires some planning before the operation can be  started.  Fig. 6-19 shows a ..."
+        }
+      ],
+      "response_time_s": 5.42,
+      "error": null
+    },
+    {
+      "id": "REG-11",
+      "category": "lean-manufacturing",
+      "question": "In lean, what is Value Stream?",
+      "ground_truth": "The Value Stream is the set of specific actions required to bring a specific product through three critical management tasks of any business: problem solving, information management, and physical transformation.",
+      "answer": "I found relevant content in multiple documents: \"boeing lean manufacturing studies\" and \"lean manufacturing\". Which one are you asking about, or would you like me to check all relevant documents?",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 3.03,
+      "error": null
+    },
+    {
+      "id": "REG-12",
+      "category": "lean-manufacturing",
+      "question": "What resource productivity gains did Boeing achieve from the new shipping process?",
+      "ground_truth": "Approximately $7,900 has been saved per shipset, or $396,000 in annual transportation costs. Floor grid inventory has been reduced by 25 percent. Each ship set uses 50 percent less transportation. Multiple transfers, rail travel, and truck travel to the rail heads have been completely eliminated, and eight days of travel plus three days of receiving and inspection have been eliminated.",
+      "answer": "**Resource Productivity Gains from New Shipping Process**\n\nBoeing achieved the following resource productivity gains from the new shipping process:\n\n1. **Elimination of Multiple Transfers**: Rail travel and truck travel to rail heads were completely removed.\n2. **Time Savings**: Eight days of travel and three days of receiving and inspection were eliminated.\n3. **Cost Savings**: Approximately $7,900 was saved per shipset, totaling $396,000 in annual transportation costs.\n4. **Inventory Reduction**: Floor grid inventory was reduced by 25 percent.",
+      "contexts": [
+        "seat tracks from Wichita to Tulsa, pick up the floor beams then, carrying complete ship sets, travel directly  to Everett and deliver the parts directly to the fact ory for use.  Receiving and inspection processes are  conducted at the plant. The redesigned shipping process allows a single truck to deliver a shipset of floor  grid components directly to their point of use.   As a result of the new shipping process, Boeing has realized the following resource productivity gains:  \u001a\t Multiple transfers, rail travel, and truck travel to the rail heads have been completely eliminated.  Trucks no longer run empty from Kansas City to Tulsa because shipping by rail has been removed  from the process.  \u001a Eight days of travel and three days of receiving and inspection have been eliminated.  \u001a Approximately $7,900 has been saved per shipset or $396,000 in annual transportation costs.  \u001a Floor grid inventory has been reduced by 25 percent. Components are now shipped directly to the"
+      ],
+      "sources": [
+        {
+          "file": "boeing_lean_manufacturing_studies.pdf",
+          "full_snippet": "seat tracks from Wichita to Tulsa, pick up the floor beams then, carrying complete ship sets, travel directly  to Everett and deliver the parts directly to the fact ory for use.  Receiving and inspection processes are  conducted at the plant. The redesigned shipping process allows a single truck to deliver a shipset of floor  grid components directly to their point of use.   As a result of the new shipping process, Boeing has realized the following resource productivity gains:  \u001a\t Multiple transfers, rail travel, and truck travel to the rail heads have been completely eliminated.  Trucks no longer run empty from Kansas City to Tulsa because shipping by rail has been removed  from the process.  \u001a Eight days of travel and three days of receiving and inspection have been eliminated.  \u001a Approximately $7,900 has been saved per shipset or $396,000 in annual transportation costs.  \u001a Floor grid inventory has been reduced by 25 percent. Components are now shipped directly to the",
+          "id": 1,
+          "page": 32,
+          "snippet": "seat tracks from Wichita to Tulsa, pick up the floor beams then, carrying complete ship sets, travel directly  to Everett and deliver the parts direct..."
+        }
+      ],
+      "response_time_s": 5.81,
+      "error": null
+    },
+    {
+      "id": "REG-13",
+      "category": "lean-manufacturing",
+      "question": "What does monuments mean and give me two examples?",
+      "ground_truth": "Monuments are production processes or process steps that have large equipment and/or other physical or environmental regulatory constraints, are very difficult or costly to move, and can disrupt the flow sought through Lean. Examples include painting processes with large fixed paint booths or dipping tanks, and metal finishing processes with large tanks and/or fixed equipment.",
+      "answer": "The uploaded documents do not contain information about this.",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 4.35,
+      "error": null
+    },
+    {
+      "id": "REG-15",
+      "category": "calibration",
+      "question": "What is the difference between preventive maintenance and corrective maintenance?",
+      "ground_truth": "Preventive maintenance consists of maintenance activities carried out periodically according to criteria defined by the official equipment maintainer. Corrective maintenance consists of maintenance activities performed on equipment when an incident is detected in its normal operation.",
+      "answer": "I found relevant content in multiple documents: \"sop maintenance and calibration of equipment\" and \"c4isr maintenance practices\". Which one are you asking about, or would you like me to check all relevant documents?",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 3.85,
+      "error": null
+    },
+    {
+      "id": "REG-16",
+      "category": "cnc",
+      "question": "For the cnc shop what are the required clothes?",
+      "ground_truth": "ANSI approved safety glasses must be worn at all times in the shop, not just when at the machine. Do not wear flip flops or sandals; leather shoes are best. Do not wear long sleeve shirts as these could get caught in equipment; wear short sleeves or T-shirts. Remove rings and watches when at the machine. Do not wear short pants; wear sturdy long pants like blue jeans or work pants. Long hair should be tied back or under a hat to prevent it being caught in the machine spindle. Never wear gloves as they can be caught in the machine; latex gloves are acceptable.",
+      "answer": "**Required Clothing for CNC Shop:**\n\n- **Safety Glasses**: Must wear ANSI approved safety glasses at all times in the shop.\n- **Pants**: Wear ankle-length pants; sturdy long pants like blue jeans or work pants are recommended.\n- **Shirts**: Wear short sleeves or T-shirts; long sleeve shirts are not allowed.\n- **Footwear**: Must wear fully enclosed shoes; inappropriate footwear includes open-toe shoes, sandals, crocs, and high heels.\n- **Hair**: Long hair should be tied back or secured to prevent it from getting caught in machinery.\n- **Jewelry**: Remove all rings, watches, necklaces, bracelets, and dangling earrings before operating machinery.",
+      "contexts": [
+        "• Wear ANSI approved safety glasses or ANSI safety approved glasses with side shields. You must wear  safety glasses at all times in the shop, not just when at the machine.  • If machining operations are loud, use hearing protection.  • Do not wear flip flops or sandals. Leather shoes are best. Steel toe shoes are not necessary unless  handling heavy objects that would crush regular shoes.  • Do not wear long sleeve shirts  because these could get caught in equipment . Wear short sleeves or  T-shirts.   • Remove rings and watches when at the machine.  • Do not wear short pants. Wear sturdy long pants like blue jeans or work pants.  • Long hair should be tied back or under a hat to prevent it being caught in the machine spindle.  • Never wear gloves as they can be caught in the machine. Latex gloves are acceptable.",
+        "approved.   Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.   Jewelry – You will remove all rings, watches, necklaces, bracelets, and dangling earrings before  operating any machinery or tools.   Proper Attire- You will wear ankle-length pants. Loose hair and clothing are extremely dangerous . You  must tuck in your shirt, roll up long sleeves, secure draw strings, tie back hair, etc…    No Open -Toe Shoes –  You must wear appropriate foot wear while in the shop. Shoes must be fully  enclosed. Inappropriate footwear includes: open-toe shoes, sandals, crocks, high heels, etc…   Clean-Up –Before leaving the shop area, you must assist in cleaning any mess (metal chips, splashed  coolant) that you produce. You must clean any spilled liquids immediately.    Return of Tools and Parts-You will return any tools, instruments, bits, etc. to their proper location after  using them.",
+        "Use Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.    No Jewelry – You will remove all rings, watches, necklaces, bracelets, and dangling earring s before operating  any machinery or tools.   Proper Attire- You will wear ankle -length pants. Loose  hair and clothing are extremely dangerous. You must  tuck in your shirt, roll up long sleeves, secure draw strings, tie back hair, etc…    No Open-Toe Shoes – You must wear appropriate foot wear while in the shop. Shoes must be fully enclosed.  Inappropriate footwear includes: open-toe shoes, sandals, crocks, high heels, etc…   Clean-Up–Before leaving the shop area, you must assist in cleaning any mess (metal chips, splashed coolant)  that you produce. You must clean any spilled liquids immediately.   Return of Tools and Parts- You will return any tools, instruments, bits, etc. to their proper location after using  them.",
+        "Fundamentals of CNC Machining  2-1                                  Lesson 2  Shop Safety            Upon successful completion of this lesson, you will be able to:  • Display an awareness of shop safety.  • Apply general shop safety rules.   • Select appropriate shop clothing.   • Demonstrate safe personal conduct in the shop.  • Apply additional safety precautions when running a new CNC program."
+      ],
+      "sources": [
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "• Wear ANSI approved safety glasses or ANSI safety approved glasses with side shields. You must wear  safety glasses at all times in the shop, not just when at the machine.  • If machining operations are loud, use hearing protection.  • Do not wear flip flops or sandals. Leather shoes are best. Steel toe shoes are not necessary unless  handling heavy objects that would crush regular shoes.  • Do not wear long sleeve shirts  because these could get caught in equipment . Wear short sleeves or  T-shirts.   • Remove rings and watches when at the machine.  • Do not wear short pants. Wear sturdy long pants like blue jeans or work pants.  • Long hair should be tied back or under a hat to prevent it being caught in the machine spindle.  • Never wear gloves as they can be caught in the machine. Latex gloves are acceptable.",
+          "id": 1,
+          "page": 19,
+          "snippet": "• Wear ANSI approved safety glasses or ANSI safety approved glasses with side shields. You must wear  safety glasses at all times in the shop, not jus..."
+        },
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "approved.   Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.   Jewelry – You will remove all rings, watches, necklaces, bracelets, and dangling earrings before  operating any machinery or tools.   Proper Attire- You will wear ankle-length pants. Loose hair and clothing are extremely dangerous . You  must tuck in your shirt, roll up long sleeves, secure draw strings, tie back hair, etc…    No Open -Toe Shoes –  You must wear appropriate foot wear while in the shop. Shoes must be fully  enclosed. Inappropriate footwear includes: open-toe shoes, sandals, crocks, high heels, etc…   Clean-Up –Before leaving the shop area, you must assist in cleaning any mess (metal chips, splashed  coolant) that you produce. You must clean any spilled liquids immediately.    Return of Tools and Parts-You will return any tools, instruments, bits, etc. to their proper location after  using them.",
+          "id": 2,
+          "page": 254,
+          "snippet": "approved.   Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.   Jewelry – You will remove all ring..."
+        },
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "Use Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.    No Jewelry – You will remove all rings, watches, necklaces, bracelets, and dangling earring s before operating  any machinery or tools.   Proper Attire- You will wear ankle -length pants. Loose  hair and clothing are extremely dangerous. You must  tuck in your shirt, roll up long sleeves, secure draw strings, tie back hair, etc…    No Open-Toe Shoes – You must wear appropriate foot wear while in the shop. Shoes must be fully enclosed.  Inappropriate footwear includes: open-toe shoes, sandals, crocks, high heels, etc…   Clean-Up–Before leaving the shop area, you must assist in cleaning any mess (metal chips, splashed coolant)  that you produce. You must clean any spilled liquids immediately.   Return of Tools and Parts- You will return any tools, instruments, bits, etc. to their proper location after using  them.",
+          "id": 3,
+          "page": 23,
+          "snippet": "Use Hearing Protection – You will wear hearing protection when and if asked to do so by the instructor.    No Jewelry – You will remove all rings, wat..."
+        },
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "Fundamentals of CNC Machining  2-1                                  Lesson 2  Shop Safety            Upon successful completion of this lesson, you will be able to:  • Display an awareness of shop safety.  • Apply general shop safety rules.   • Select appropriate shop clothing.   • Demonstrate safe personal conduct in the shop.  • Apply additional safety precautions when running a new CNC program.",
+          "id": 4,
+          "page": 16,
+          "snippet": "Fundamentals of CNC Machining  2-1                                  Lesson 2  Shop Safety            Upon successful completion of this lesson, you wi..."
+        }
+      ],
+      "response_time_s": 7.39,
+      "error": null
+    },
+    {
+      "id": "REG-17",
+      "category": "cnc",
+      "question": "What is the difference between subplate vs angle plate?",
+      "ground_truth": "A subplate is a ground aluminum plate that bolts to the top of the machine table and has threaded holes and bushings at regular intervals. An angle plate is a precision ground steel plate that allows the part to be set on its side, and can point in a direction parallel to either the X or Y axis.",
+      "answer": "**Difference Between Subplate and Angle Plate**\n\n- **Subplate**:\n  - A **ground aluminum plate** that bolts to the top of the machine table.\n  - Features **threaded holes and bushings** at regular intervals.\n  - Protects the machine table and speeds up setups by allowing clamps and components to be quickly located.\n  - Generally remains **permanently fixed** on the table, with fixtures and vises installed on top.\n\n- **Angle Plate**:\n  - A **precision ground steel plate** used to set parts on edge.\n  - Can be aligned to point in a direction parallel to either the **X or Y axis**.\n  - Used for machining operations, where parts are secured with **toggle clamps** and leveled using a **Machinists Square**.",
+      "contexts": [
+        "possible, acquire a fixture components catalog or look at the web sites of Carr- Lane (carrlane.com), Jergens  (jergensinc.com), Chick (chickworkholding.com) MSC (mscdirect.com) and others.  Subplates and Angle Plates  A Subplateis a ground aluminum plate that bolts to the top of the machine table. It has threaded holes and  bushings at regular intervals.   Subplates protect the machine table and speeds setups by allowing clamps and other components to be  quickly and precisely located anywhere in the workspace.  Once installed, the subplate generally remains permanently fixed on the table. Fixtures and vises are  installed on top of it.   An Angle plate is a precision ground steel plate that allows the part to be set  on its side. Angle plates can  point in a direction parallel to either the X or Y axis.    Figure 1: Angle Plate and Sub Plate  Angle Plate Subplate",
+        "Fundamentals of CNC Machining  Appendix A  CNC Milling Work-Holding Examples    A-44  Copyright 2012 HSMWorks, ApS  5 Set Up Angle Plate  An angle plate is a sturdy precision ground plate that is used to set parts on edge.      The next operation machines the holes and fillets on the right side. (This is done before finishing the bottom  so the material helps support the part from bending while machining the ends.)    Bolt and align the angle plate to the t able. Secure the part with toggle clamps  and use a Machinists Square   to level the part. Check by running a dial indicator across the flange as shown . This angle is critical, so make  the part as level as possible.     The XY Datum can be found by picking up the reference point shown in Figure 59. Notice that the Y-datum is  established by locating the finished part top against the angle plate.       Figure 59: Angle Plate Setup     Toggle Clamps Angle Plate Dial Indicate This Edge to Level Part G55 G55"
+      ],
+      "sources": [
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "possible, acquire a fixture components catalog or look at the web sites of Carr- Lane (carrlane.com), Jergens  (jergensinc.com), Chick (chickworkholding.com) MSC (mscdirect.com) and others.  Subplates and Angle Plates  A Subplateis a ground aluminum plate that bolts to the top of the machine table. It has threaded holes and  bushings at regular intervals.   Subplates protect the machine table and speeds setups by allowing clamps and other components to be  quickly and precisely located anywhere in the workspace.  Once installed, the subplate generally remains permanently fixed on the table. Fixtures and vises are  installed on top of it.   An Angle plate is a precision ground steel plate that allows the part to be set  on its side. Angle plates can  point in a direction parallel to either the X or Y axis.    Figure 1: Angle Plate and Sub Plate  Angle Plate Subplate",
+          "id": 1,
+          "page": 170,
+          "snippet": "possible, acquire a fixture components catalog or look at the web sites of Carr- Lane (carrlane.com), Jergens  (jergensinc.com), Chick (chickworkholdi..."
+        },
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "Fundamentals of CNC Machining  Appendix A  CNC Milling Work-Holding Examples    A-44  Copyright 2012 HSMWorks, ApS  5 Set Up Angle Plate  An angle plate is a sturdy precision ground plate that is used to set parts on edge.      The next operation machines the holes and fillets on the right side. (This is done before finishing the bottom  so the material helps support the part from bending while machining the ends.)    Bolt and align the angle plate to the t able. Secure the part with toggle clamps  and use a Machinists Square   to level the part. Check by running a dial indicator across the flange as shown . This angle is critical, so make  the part as level as possible.     The XY Datum can be found by picking up the reference point shown in Figure 59. Notice that the Y-datum is  established by locating the finished part top against the angle plate.       Figure 59: Angle Plate Setup     Toggle Clamps Angle Plate Dial Indicate This Edge to Level Part G55 G55",
+          "id": 2,
+          "page": 219,
+          "snippet": "Fundamentals of CNC Machining  Appendix A  CNC Milling Work-Holding Examples    A-44  Copyright 2012 HSMWorks, ApS  5 Set Up Angle Plate  An angle pla..."
+        }
+      ],
+      "response_time_s": 6.85,
+      "error": null
+    },
+    {
+      "id": "REG-18",
+      "category": "cnc",
+      "question": "What are the varieties of milling cutter tool constructions?",
+      "ground_truth": "Solid cutters are made from a single piece of HSS or carbide with low initial cost. Inserted blade cutters are usually made from HSS, carbide, or cast alloy, and individual blades can be replaced as they wear out. Indexable insert cutters use inserts made from carbide, coated carbide, ceramic, or ultrahard material such as diamond, and as inserts wear they are repositioned to expose new cutting surface.",
+      "answer": "**Varieties of Milling Cutter Tool Constructions:**\n\n1. **Solid Cutters** \n   - Made from a single piece of **HSS** or **carbide**.\n   - Can be tipped with a harder material.\n   - Designed for specific cutting conditions.\n   - Low initial cost.\n\n2. **Inserted Blade Cutters**\n   - Usually made from **HSS**, **carbide**, or **cast alloy**.\n   - Individual blades can be replaced as they wear out, saving replacement costs.\n   - Ideal for close-tolerance finishing.\n\n3. **End Mills**\n   - Available in various materials including:\n     - **Cobalt high speed steel** (super H.S.S.)\n     - **Coated H.S.S.**\n     - **Solid carbide**\n     - **Micrograin solid carbide**\n     - **Indexable inserts** of cemented carbide or coated carbide.",
+      "contexts": [
+        "column, as depicted in Figure 13.2.6. For very large w orkpieces, gantry or bridge-type milling machines are used. Machines having tw o columns can provide greater stability to the cutting spindle(s). Special- purpose machines are modiﬁcations of the three basic models. The usual power range for knee-and-column machines is 1 to 50 hp (0.75 to 37 kW). Bed-type machines are available in a wide range of sizes, up to 300 hp (225 kW). Planar-type machines are available from 30 to 100 hp (22 to 75 kW). There is a wide variety of milling cutters, using the full range of cutting tool materials; there are three basic constructions (ASM, 1989b): • Solid — Made from a single piece of HSS or carbide; cutters can be tipped with a harder material; teeth can designed for speciﬁc cutting conditions; low initial cost. • Inserted blade — Usually made from HSS, carbide, or cast alloy; individual blades can be replaced as they wear out, saving replacement cost; ideal for close-tolerance ﬁnishing.",
+        "116 Manufacturing Processes W ork piece Cutter (a) (b) W ork piece Cutter W ork piece Cutter (c) Fig. 4.7 Symmetrical vs asymmetrical milling Asymmetric milling with larger chip thickness at entry and smaller chip thickness at exit (Fig. 4.7 (b)) is ideal and should be adopted. END MILLING End mills perform a combination of peripheral as well as face milling operations simultaneously. It has got cutting edges on the bottom face as well as on its periphery. End mills are extremely useful and are used for machining edges, shoulders, grooves, slots and keyway pockets. They are also widely used for die-sinking and generation of sculpted surfaces. Today, end mills are available in many tool materials: 1. Cobalt high speed steel (super H.S.S.) 2. Coated H.S.S. 3. Solid carbide 4. Micrograin solid carbide 5. Indexable inserts of cemented carbide or coated carbide. A solid carbide end mill and its applications in shoulder and pocket machining are shown in Fig.",
+        "nose end mills have a radius corner. They are used to create a fillet on the bottom of a wall. Because they  are sturdier than an end mill they are also sometimes used for roughing operations. Chamfer mills  have an  angled nose used to create a chamfer or to de-burr parts.  Number of Flutes  Milling tools usually have either two or four cutting flutes.  Two flute cutters provide more chip clearance  when milling in close areas.  Four flute mills are more rigid, can be fed faster, and are preferred when  greater chip clearance is not required, such as when milling an outside contour.  Center-CuttingEnd Mills  Milling tools are either center cutting or non -center cutting.  Center cutting mills can plunge straight down  into material, while non-center cutting tools cannot.    Flat Nose Ball NoseFlat Nose Bull Nose Chamfer"
+      ],
+      "sources": [
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "column, as depicted in Figure 13.2.6. For very large w orkpieces, gantry or bridge-type milling machines are used. Machines having tw o columns can provide greater stability to the cutting spindle(s). Special- purpose machines are modiﬁcations of the three basic models. The usual power range for knee-and-column machines is 1 to 50 hp (0.75 to 37 kW). Bed-type machines are available in a wide range of sizes, up to 300 hp (225 kW). Planar-type machines are available from 30 to 100 hp (22 to 75 kW). There is a wide variety of milling cutters, using the full range of cutting tool materials; there are three basic constructions (ASM, 1989b): • Solid — Made from a single piece of HSS or carbide; cutters can be tipped with a harder material; teeth can designed for speciﬁc cutting conditions; low initial cost. • Inserted blade — Usually made from HSS, carbide, or cast alloy; individual blades can be replaced as they wear out, saving replacement cost; ideal for close-tolerance ﬁnishing.",
+          "id": 1,
+          "page": 21,
+          "snippet": "column, as depicted in Figure 13.2.6. For very large w orkpieces, gantry or bridge-type milling machines are used. Machines having tw o columns can pr..."
+        },
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "116 Manufacturing Processes W ork piece Cutter (a) (b) W ork piece Cutter W ork piece Cutter (c) Fig. 4.7 Symmetrical vs asymmetrical milling Asymmetric milling with larger chip thickness at entry and smaller chip thickness at exit (Fig. 4.7 (b)) is ideal and should be adopted. END MILLING End mills perform a combination of peripheral as well as face milling operations simultaneously. It has got cutting edges on the bottom face as well as on its periphery. End mills are extremely useful and are used for machining edges, shoulders, grooves, slots and keyway pockets. They are also widely used for die-sinking and generation of sculpted surfaces. Today, end mills are available in many tool materials: 1. Cobalt high speed steel (super H.S.S.) 2. Coated H.S.S. 3. Solid carbide 4. Micrograin solid carbide 5. Indexable inserts of cemented carbide or coated carbide. A solid carbide end mill and its applications in shoulder and pocket machining are shown in Fig.",
+          "id": 2,
+          "page": 131,
+          "snippet": "116 Manufacturing Processes W ork piece Cutter (a) (b) W ork piece Cutter W ork piece Cutter (c) Fig. 4.7 Symmetrical vs asymmetrical milling Asymmetr..."
+        },
+        {
+          "file": "autodesk_cncbook.pdf",
+          "full_snippet": "nose end mills have a radius corner. They are used to create a fillet on the bottom of a wall. Because they  are sturdier than an end mill they are also sometimes used for roughing operations. Chamfer mills  have an  angled nose used to create a chamfer or to de-burr parts.  Number of Flutes  Milling tools usually have either two or four cutting flutes.  Two flute cutters provide more chip clearance  when milling in close areas.  Four flute mills are more rigid, can be fed faster, and are preferred when  greater chip clearance is not required, such as when milling an outside contour.  Center-CuttingEnd Mills  Milling tools are either center cutting or non -center cutting.  Center cutting mills can plunge straight down  into material, while non-center cutting tools cannot.    Flat Nose Ball NoseFlat Nose Bull Nose Chamfer",
+          "id": 3,
+          "page": 26,
+          "snippet": "nose end mills have a radius corner. They are used to create a fillet on the bottom of a wall. Because they  are sturdier than an end mill they are al..."
+        }
+      ],
+      "response_time_s": 7.18,
+      "error": null
+    },
+    {
+      "id": "REG-19",
+      "category": "server",
+      "question": "What is error code 8x1A?",
+      "ground_truth": "Error code 8x1A indicates an AC Voltage Surge. If the fault persists, check the AC connection to the inverter, verify the inverter is set to the correct country, check with the grid operator if a large surge source or irregular load exists near the site, and verify that the output wire size matches the distance between the inverter and the grid connection.",
+      "answer": "**Error Code 8x1A**  \n- **Description**: AC voltage surge.  \n- **Troubleshooting**:  \n  - Check the AC connection to the inverter.  \n  - Verify that the inverter is set to the correct country.  \n  - Check with the grid operator if a large surge source or irregular load exists near the site.  \n  - Verify that the output wire size matches the distance between the inverter and the location of the grid connection.  \n  - Use a larger gauge wire for the AC output.  \n  - Refer to the AC Wiring Application Note at [SolarEdge Wiring Application Note](http://www.solaredge.us/files/pdfs/application-note-recommended-wiring.pdf).",
+      "contexts": [
+        "Version 1.1      28   Commercial Three Phase inverters error codes list   Error Code  Description  Troubleshooting   8x1A AC voltage surge.   If the fault persists:  • Check the AC connection to  inverter.  • Verify that the inverter is set to  the correct country.  • Check with the grid operator if a  large surge source or irregular  load exists near the site.  • Verify that the output wire size  matches the distance between  the inverter and the location of  the grid connection.  • Use a larger gauge wire for the  AC output.  • Refer to the AC Wiring  Application Note at  http://www.solaredge.us/files/p dfs/application-note- recommended-wiring.pdf  8x1B AC voltage surge.   If the fault persists:  • Check the AC connection to  inverter.  • Verify that the inverter is set to  the correct country.  • Check with the grid operator if a  large surge source or irregular  load exists near the site.  • Verify that the output wire size  matches the distance between"
+      ],
+      "sources": [
+        {
+          "file": "server_installation-guide-error-codes.pdf",
+          "full_snippet": "Version 1.1      28   Commercial Three Phase inverters error codes list   Error Code  Description  Troubleshooting   8x1A AC voltage surge.   If the fault persists:  • Check the AC connection to  inverter.  • Verify that the inverter is set to  the correct country.  • Check with the grid operator if a  large surge source or irregular  load exists near the site.  • Verify that the output wire size  matches the distance between  the inverter and the location of  the grid connection.  • Use a larger gauge wire for the  AC output.  • Refer to the AC Wiring  Application Note at  http://www.solaredge.us/files/p dfs/application-note- recommended-wiring.pdf  8x1B AC voltage surge.   If the fault persists:  • Check the AC connection to  inverter.  • Verify that the inverter is set to  the correct country.  • Check with the grid operator if a  large surge source or irregular  load exists near the site.  • Verify that the output wire size  matches the distance between",
+          "id": 1,
+          "page": 29,
+          "snippet": "Version 1.1      28   Commercial Three Phase inverters error codes list   Error Code  Description  Troubleshooting   8x1A AC voltage surge.   If the f..."
+        }
+      ],
+      "response_time_s": 7.17,
+      "error": null
+    },
+    {
+      "id": "REG-20",
+      "category": "manufacturing",
+      "question": "What are the general processing guidelines?",
+      "ground_truth": "The range of usable power densities for laser surface hardening is 3200 W/in² (500 W/cm²) to 32,000 W/in² (5000 W/cm²) with beam dwell times from 0.1 to 10 seconds; higher power levels would melt the surface. Alloys with high hardenability can be processed at low speed with low power density to produce relatively thick cases, while alloys with low hardenability should be processed at high speed with high power density for a shallow case. Beam configuration can be rectangular, square, or round, and uniform energy density within the beam is very important.",
+      "answer": "I can only answer questions about the uploaded documents.",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 2.07,
+      "error": null
+    },
+    {
+      "id": "REG-21",
+      "category": "manufacturing",
+      "question": "What is laser surface hardening?",
+      "ground_truth": "Laser surface hardening is used as an alternative to flame hardening and induction hardening of ferrous materials. The rapid heating rate achievable by the laser minimizes part distortion and can impart surface hardness to low-carbon steels. This process is used to harden selected areas of machine components such as gears, cylinders, bearings, and shafts, and the entire operation can be performed in air.",
+      "answer": "**Laser Surface Hardening**\n\n- **Definition**: Laser surface hardening is a process used to harden selected areas of machine components, such as gears, cylinders, bearings, and shafts, by imparting wear resistance and strength to the surface without affecting overall dimensions or bulk properties.\n- **Process**: It involves rapid laser heating followed by rapid quenching, resulting in a fine grain structure that is extremely hard. The typical case depth ranges from 0.01 to 0.05 in. (0.03 to 0.13 cm) for low- and medium-carbon steels, increasing with carbon content.\n- **Applications**: It serves as an alternative to flame hardening and induction hardening for ferrous materials, minimizing part distortion and allowing for operation in air.\n- **Key Parameters**:\n  - Usable power densities range from **3200 W/in²** (500 W/cm²) to **32,000 W/in²** (5000 W/cm²).\n  - Beam dwell times range from **0.1 to 10 seconds**.\n  - Beam configurations can be rectangular, square, or round, with uniform energy density being crucial.\n- **Limitations**: The depth of hardness is limited by the surface melting point, and complex shapes may experience unexpected surface melting. Overlapping passes may be necessary, which can lead to some tempering of already hardened areas.",
+      "contexts": [
+        "distance from the workpiece can also be advantageous. The entire operation can be performed in air. This process is used to harden selected areas of machine components, such as gears, cylinders, bearings, and shafts. Laser surface hardening imparts wear resistance and strength to the surface of a component without affecting its overall dimensions or changing its bulk properties. It is applied to selected areas which can be accessed by a laser beam. The process relies on rapid laser heating, followed by rapid quenching, to effect the necessary degree of hardening through phase transformation. The result is a very ﬁne grain structure that is extremely hard. Typical case depth is a function of the composition of the ferrous material, but it will usually not exceed 0.1 in. (0.25 cm). For low- and medium-carbon steels, the case depth will range from 0.01 to 0.05 in. (0.03 to 0.13 cm), with the case depth increasing as the carbon content increases (Sandven, 1991).",
+        "Modern Manufacturing 13-43 © 1999 by CRC Press LLC history. For the laser process, the key parameters are beam power density, uniformity of the beam, and processing speed. Following are some general processing guidelines (Sandven, 1991). • The range of usable power densities for laser surface hardening is 3200 W/in.2 (500 W/cm 2) to 32,000 W/in.2 (5000 W/cm 2) with beam dwell times ranging from 0.1 to 10 sec; higher power levels w ould melt the surface. • Alloys with high hardenability can be processed at low speed with low power density to produce relatively thick cases. • Alloys with low hardenability should be processed at high speed with high power density; the result is a shallow case. • Beam conﬁguration can be rectangular, square, or round; uniform energy density within the beam is very important. • Maximum achi evable surface temperature is proportional to the square root of the processing"
+      ],
+      "sources": [
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "distance from the workpiece can also be advantageous. The entire operation can be performed in air. This process is used to harden selected areas of machine components, such as gears, cylinders, bearings, and shafts. Laser surface hardening imparts wear resistance and strength to the surface of a component without affecting its overall dimensions or changing its bulk properties. It is applied to selected areas which can be accessed by a laser beam. The process relies on rapid laser heating, followed by rapid quenching, to effect the necessary degree of hardening through phase transformation. The result is a very ﬁne grain structure that is extremely hard. Typical case depth is a function of the composition of the ferrous material, but it will usually not exceed 0.1 in. (0.25 cm). For low- and medium-carbon steels, the case depth will range from 0.01 to 0.05 in. (0.03 to 0.13 cm), with the case depth increasing as the carbon content increases (Sandven, 1991).",
+          "id": 1,
+          "page": 43,
+          "snippet": "distance from the workpiece can also be advantageous. The entire operation can be performed in air. This process is used to harden selected areas of m..."
+        },
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "Modern Manufacturing 13-43 © 1999 by CRC Press LLC history. For the laser process, the key parameters are beam power density, uniformity of the beam, and processing speed. Following are some general processing guidelines (Sandven, 1991). • The range of usable power densities for laser surface hardening is 3200 W/in.2 (500 W/cm 2) to 32,000 W/in.2 (5000 W/cm 2) with beam dwell times ranging from 0.1 to 10 sec; higher power levels w ould melt the surface. • Alloys with high hardenability can be processed at low speed with low power density to produce relatively thick cases. • Alloys with low hardenability should be processed at high speed with high power density; the result is a shallow case. • Beam conﬁguration can be rectangular, square, or round; uniform energy density within the beam is very important. • Maximum achi evable surface temperature is proportional to the square root of the processing",
+          "id": 2,
+          "page": 44,
+          "snippet": "Modern Manufacturing 13-43 © 1999 by CRC Press LLC history. For the laser process, the key parameters are beam power density, uniformity of the beam, ..."
+        }
+      ],
+      "response_time_s": 9.65,
+      "error": null
+    },
+    {
+      "id": "REG-22",
+      "category": "manufacturing",
+      "question": "Explain the key system components.",
+      "ground_truth": "The majority of industrial metalworking lasers are either solid-state Nd:YAG with power output of 50 to 500 W, or carbon dioxide type available up to 25 kW. The surface to be hardened is usually coated with manganese phosphate or paints containing graphite, silicon, and carbon to increase absorption of laser energy to 80 to 90 percent.",
+      "answer": "**Key System Components**\n\n1. **Subsystem Task**: \n   - Receives key requirements from internal customers.\n   - Translates these into subsystem requirements.\n   - Sends partial component requirements to component tasks.\n\n2. **Component Tasks**: \n   - Translate received requirements into complete component requirements.\n   - Provide partial raw material requirements.\n\n3. **Mechanical Systems**: \n   - Include components like **gears**, **cams**, **chains**, **levers**, **shafts**, **pulleys**, **couplers**, **bearings**, **joints**, and **fasteners**.\n   - Construct mechanisms for desired motion with accurate paths, positions, velocity, and accelerations.\n\n4. **Microprocessors**: \n   - Act as the brain of the mechatronic system.\n   - Manage instructions to components like transducers and actuators.\n\n5. **Control Software**: \n   - Includes **PLC**, **PID**, and other application software.\n   - Written in programming languages such as **C**, **C++**, **LISP**, **FORTH**, and **RPL**.\n\n6. **Assembly Systems**: \n   - Comprise:\n     - **Transfer system** for moving work carriers.\n     - **Parts feeding device** for supplying parts.\n     - **Parts handling/placing mechanisms** for assembly tasks.",
+      "contexts": [
+        "13-118 Section 13 © 1999 by CRC Press LLC expectations, (2) the product will meet the proﬁtability objectives of the enterprise, and (3) all environ- mental rules and regulations are met. The system task also has the responsibility of resolving conﬂicts which arise between subsystem tasks. The subsystem task receives the key requirements from its internal customer and translates these into a complete set of subsystem requirements and sends a key (but partial) set of component requirements to those responsible for the component tasks. In turn, those responsible for each component task translate the requirements received into a complete set of component requirements and a partial (but key) set of raw material requirements. Requirements set at each level include controls on variable costs, investment, performance, reliability, durability, service, disposal, environmental quality, package, assembly, and",
+        "tion, velocity, acceleration) including tactile, optical, and voice; actuators (linear, rotary, voice) driven by electrical, pneumatic, or hydraulic means; drives (DC/A C stepper or servomotors); encoders (optical or magnetic) and time counters. Other major components include signal pro- cessors, ampliﬁers, power suppliers, and A/D or D/A converters. Control softw are such as PLC, PID, and other application softw are are written in C, C++ , LISP, FORTH, and RPL programming languages. 2. Mechanical systems and kinematic linkages module: The mechanical components in a mechatronic system provide the means to achieve the desired objectives of the product or the system. Principal mechanical components include gears, cams, chains, levers, shafts, pulleys, couplers, bearings, joints, and fasteners. These components are synthesized to construct mechanisms that perform the desired motion of end effects with accurate paths, positions, velocity, and accelerations.",
+        "Assembly Methods and Systems Assembly systems are classiﬁed in several different w ays (Table 13.2.18). Figure 13.2.16 indicates the types of automated systems that could be cost-effective based on assembly part count and production volume. Generally, automatic assembly systems consist of three major components: • Transfer system to move w ork carriers with in-process subassemblies between w orkstations; • Parts feeding device to supply parts to be assembled into the appropriate position, where the parts are loaded by the handling/placing mechanism; • Parts handling/placing mechanisms to pick parts and perform assigned assembly tasks such as placing, inserting, and screwing."
+      ],
+      "sources": [
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "13-118 Section 13 © 1999 by CRC Press LLC expectations, (2) the product will meet the proﬁtability objectives of the enterprise, and (3) all environ- mental rules and regulations are met. The system task also has the responsibility of resolving conﬂicts which arise between subsystem tasks. The subsystem task receives the key requirements from its internal customer and translates these into a complete set of subsystem requirements and sends a key (but partial) set of component requirements to those responsible for the component tasks. In turn, those responsible for each component task translate the requirements received into a complete set of component requirements and a partial (but key) set of raw material requirements. Requirements set at each level include controls on variable costs, investment, performance, reliability, durability, service, disposal, environmental quality, package, assembly, and",
+          "id": 1,
+          "page": 119,
+          "snippet": "13-118 Section 13 © 1999 by CRC Press LLC expectations, (2) the product will meet the proﬁtability objectives of the enterprise, and (3) all environ- ..."
+        },
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "tion, velocity, acceleration) including tactile, optical, and voice; actuators (linear, rotary, voice) driven by electrical, pneumatic, or hydraulic means; drives (DC/A C stepper or servomotors); encoders (optical or magnetic) and time counters. Other major components include signal pro- cessors, ampliﬁers, power suppliers, and A/D or D/A converters. Control softw are such as PLC, PID, and other application softw are are written in C, C++ , LISP, FORTH, and RPL programming languages. 2. Mechanical systems and kinematic linkages module: The mechanical components in a mechatronic system provide the means to achieve the desired objectives of the product or the system. Principal mechanical components include gears, cams, chains, levers, shafts, pulleys, couplers, bearings, joints, and fasteners. These components are synthesized to construct mechanisms that perform the desired motion of end effects with accurate paths, positions, velocity, and accelerations.",
+          "id": 2,
+          "page": 85,
+          "snippet": "tion, velocity, acceleration) including tactile, optical, and voice; actuators (linear, rotary, voice) driven by electrical, pneumatic, or hydraulic m..."
+        },
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "Assembly Methods and Systems Assembly systems are classiﬁed in several different w ays (Table 13.2.18). Figure 13.2.16 indicates the types of automated systems that could be cost-effective based on assembly part count and production volume. Generally, automatic assembly systems consist of three major components: • Transfer system to move w ork carriers with in-process subassemblies between w orkstations; • Parts feeding device to supply parts to be assembled into the appropriate position, where the parts are loaded by the handling/placing mechanism; • Parts handling/placing mechanisms to pick parts and perform assigned assembly tasks such as placing, inserting, and screwing.",
+          "id": 3,
+          "page": 56,
+          "snippet": "Assembly Methods and Systems Assembly systems are classiﬁed in several different w ays (Table 13.2.18). Figure 13.2.16 indicates the types of automate..."
+        }
+      ],
+      "response_time_s": 8.84,
+      "error": null
+    },
+    {
+      "id": "REG-23",
+      "category": "manufacturing",
+      "question": "Describe how bonding is achieved.",
+      "ground_truth": "Bonding is achieved in fusion welding by interposing a liquid of substantially similar composition as the base metal between the surfaces to be joined. The need for welding and joining is substantial since only monolithic parts can be made without joining.",
+      "answer": "**Bonding Methods**\n\n- **Fusion Welding**: Bonding is achieved by interposing a liquid of substantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993). \n- **Shielded Metal Arc Welding**: This is the most widely-used welding process, where the workpiece becomes part of the electric welding circuit powered by a welding generator or transformer (Chunk 3, 5).\n- **Soldering**: Involves joining pieces without requiring joint preparation, where solder solidifies to join the pieces (Chunk 11).\n- **Brazing**: A process of joining metals with a non-ferrous filler material that has a melting point above 427°C but below that of the parent metals. The filler material flows into joint clearances by capillary action (Chunk 11).",
+      "contexts": [
+        "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount of volatiles. Shielded-Metal Arc Welding Description and Applications. Bonding is achieved in fusion welding by interposing a liquid of sub- stantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993). The need for welding and joining is substantial since only monolithic parts can be made without joining. Traditional welding processes have unique advantages, which make them the processes of choice for a large number of applications. For example, in the fabrication of heavy structures, arc welding will dominate other assembly processes because of the inherent ﬂexibility and economy of welding. Principle of Operation. In the majority of arc-welding methods, the w orkpiece is made part of the electric welding circuit, which has as its power source a welding generator or transformer. To start a",
+        "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and joining is substantial since only monolithic parts can be made without joining. The ideal joint would be indistinguishable from the base material and inexpensive to produce (Eagar, 1993). However, experience indicates that no universal joining process exists that can entirely satisfy the wide range of application needs, and thus design engineers must select the most appropriate joining methods that meet requirements. Shielded metal-arc welding, the most widely-used welding process, is described in this section. The unit processes described here are a representative sample of the types most likely to be encoun- tered. The references listed at the end of the section should be consulted for detailed information on these unit processes. Polymer Composite Consolidation Weiping Wang, Alan Ridilla, and Matthew Buczek",
+        "under pressure. When the solder solidifies, the two pieces get joined. The process of soldering does not call for any joint preparation. A common example of soldering can be seen in joining electrical wires of P .C.B. circuits. BRAZING PROCESS Brazing is a process of joining metals with a non-ferrous filler material. The filler material has a melt- ing point above 427°C but below the melting point of the parent metals to be joined. The filler material is called “spelter” in case of brazing and it must wet the surfaces to be joined. In brazing, the joint has to be carefully designed and joint prepared with due care. When spelter is molten, it flows into the joint clearances by capillary action and fills up all vacant spaces. Since higher temperatures are involved in brazing, a light alloying action at the surface layers of parent metal takes place. This lends considerable strength to the brazed joints."
+      ],
+      "sources": [
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount of volatiles. Shielded-Metal Arc Welding Description and Applications. Bonding is achieved in fusion welding by interposing a liquid of sub- stantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993). The need for welding and joining is substantial since only monolithic parts can be made without joining. Traditional welding processes have unique advantages, which make them the processes of choice for a large number of applications. For example, in the fabrication of heavy structures, arc welding will dominate other assembly processes because of the inherent ﬂexibility and economy of welding. Principle of Operation. In the majority of arc-welding methods, the w orkpiece is made part of the electric welding circuit, which has as its power source a welding generator or transformer. To start a",
+          "id": 1,
+          "page": 54,
+          "snippet": "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount..."
+        },
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and joining is substantial since only monolithic parts can be made without joining. The ideal joint would be indistinguishable from the base material and inexpensive to produce (Eagar, 1993). However, experience indicates that no universal joining process exists that can entirely satisfy the wide range of application needs, and thus design engineers must select the most appropriate joining methods that meet requirements. Shielded metal-arc welding, the most widely-used welding process, is described in this section. The unit processes described here are a representative sample of the types most likely to be encoun- tered. The references listed at the end of the section should be consulted for detailed information on these unit processes. Polymer Composite Consolidation Weiping Wang, Alan Ridilla, and Matthew Buczek",
+          "id": 2,
+          "page": 51,
+          "snippet": "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and..."
+        },
+        {
+          "file": "manufacturing_processes.pdf",
+          "full_snippet": "under pressure. When the solder solidifies, the two pieces get joined. The process of soldering does not call for any joint preparation. A common example of soldering can be seen in joining electrical wires of P .C.B. circuits. BRAZING PROCESS Brazing is a process of joining metals with a non-ferrous filler material. The filler material has a melt- ing point above 427°C but below the melting point of the parent metals to be joined. The filler material is called “spelter” in case of brazing and it must wet the surfaces to be joined. In brazing, the joint has to be carefully designed and joint prepared with due care. When spelter is molten, it flows into the joint clearances by capillary action and fills up all vacant spaces. Since higher temperatures are involved in brazing, a light alloying action at the surface layers of parent metal takes place. This lends considerable strength to the brazed joints.",
+          "id": 3,
+          "page": 155,
+          "snippet": "under pressure. When the solder solidifies, the two pieces get joined. The process of soldering does not call for any joint preparation. A common exam..."
+        }
+      ],
+      "response_time_s": 7.65,
+      "error": null
+    },
+    {
+      "id": "REG-24",
+      "category": "manufacturing",
+      "question": "Can you give me an application or example of how bonding is achieved?",
+      "ground_truth": "In the fabrication of heavy structures, arc welding dominates other assembly processes because of the inherent flexibility and economy of welding.",
+      "answer": "**Bonding in Welding**\n\n- Bonding is achieved in **fusion welding** by interposing a liquid of substantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993).\n- **Shielded Metal-Arc Welding** is the most widely-used welding process, particularly effective in the fabrication of heavy structures due to its flexibility and economy.",
+      "contexts": [
+        "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and joining is substantial since only monolithic parts can be made without joining. The ideal joint would be indistinguishable from the base material and inexpensive to produce (Eagar, 1993). However, experience indicates that no universal joining process exists that can entirely satisfy the wide range of application needs, and thus design engineers must select the most appropriate joining methods that meet requirements. Shielded metal-arc welding, the most widely-used welding process, is described in this section. The unit processes described here are a representative sample of the types most likely to be encoun- tered. The references listed at the end of the section should be consulted for detailed information on these unit processes. Polymer Composite Consolidation Weiping Wang, Alan Ridilla, and Matthew Buczek",
+        "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount of volatiles. Shielded-Metal Arc Welding Description and Applications. Bonding is achieved in fusion welding by interposing a liquid of sub- stantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993). The need for welding and joining is substantial since only monolithic parts can be made without joining. Traditional welding processes have unique advantages, which make them the processes of choice for a large number of applications. For example, in the fabrication of heavy structures, arc welding will dominate other assembly processes because of the inherent ﬂexibility and economy of welding. Principle of Operation. In the majority of arc-welding methods, the w orkpiece is made part of the electric welding circuit, which has as its power source a welding generator or transformer. To start a"
+      ],
+      "sources": [
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and joining is substantial since only monolithic parts can be made without joining. The ideal joint would be indistinguishable from the base material and inexpensive to produce (Eagar, 1993). However, experience indicates that no universal joining process exists that can entirely satisfy the wide range of application needs, and thus design engineers must select the most appropriate joining methods that meet requirements. Shielded metal-arc welding, the most widely-used welding process, is described in this section. The unit processes described here are a representative sample of the types most likely to be encoun- tered. The references listed at the end of the section should be consulted for detailed information on these unit processes. Polymer Composite Consolidation Weiping Wang, Alan Ridilla, and Matthew Buczek",
+          "id": 1,
+          "page": 51,
+          "snippet": "ically and quickly evaluated for beneﬁt in manufacturing applications, driven by the promise of signiﬁcant potential beneﬁts. The need for welding and..."
+        },
+        {
+          "file": "modern_manufacturing.pdf",
+          "full_snippet": "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount of volatiles. Shielded-Metal Arc Welding Description and Applications. Bonding is achieved in fusion welding by interposing a liquid of sub- stantially similar composition as the base metal between the surfaces to be joined (Eagar, 1993). The need for welding and joining is substantial since only monolithic parts can be made without joining. Traditional welding processes have unique advantages, which make them the processes of choice for a large number of applications. For example, in the fabrication of heavy structures, arc welding will dominate other assembly processes because of the inherent ﬂexibility and economy of welding. Principle of Operation. In the majority of arc-welding methods, the w orkpiece is made part of the electric welding circuit, which has as its power source a welding generator or transformer. To start a",
+          "id": 2,
+          "page": 54,
+          "snippet": "Modern Manufacturing 13-53 © 1999 by CRC Press LLC press molding is generally suitable for composite systems which do not generate a signiﬁcant amount..."
+        }
+      ],
+      "response_time_s": 5.7,
+      "error": null
+    },
+    {
+      "id": "REG-14",
+      "category": "grounding",
+      "question": "What is the torque specification for a Ford F-150 lug nut?",
+      "answer": "The uploaded documents do not contain information about this.",
+      "contexts": [],
+      "sources": [],
+      "response_time_s": 4.82,
+      "error": null
+    }
+  ]
+}
