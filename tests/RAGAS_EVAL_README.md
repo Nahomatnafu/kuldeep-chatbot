@@ -111,16 +111,36 @@ Results are saved to `tests/regression_results_<timestamp>.json` after every run
 
 The Run 2 scores are more trustworthy as a quality signal. The context_recall score in particular will only become reliable once ground truths are rewritten to match what the documents actually say. See the [Adding or editing test cases](#adding-or-editing-test-cases) section for guidance.
 
-**Current baseline** (use Run 2 for regression comparisons going forward):
+**Current baseline** (use Run 3 for regression comparisons going forward):
 
 | Metric | Score | Threshold |
 |---|---|---|
-| faithfulness | 0.876 | 0.70 ✓ |
-| answer_relevancy | 0.971 | 0.70 ✓ |
-| context_precision | 0.651 | 0.60 ✓ |
-| context_recall | 0.499 | 0.60 ✗ |
+| faithfulness | 0.8775 | 0.70 ✓ |
+| answer_relevancy | 0.9279 | 0.70 ✓ |
+| context_precision | 0.9318 | 0.60 ✓ |
+| context_recall | 0.7565 | 0.60 ✓ |
 
-context_recall is expected to remain below threshold until ground truths are updated. Run with `--no-fail` until that work is done.
+All four metrics pass. Ground truths were rewritten from actual document text, fixing the context_recall failure seen in Run 2.
+
+---
+
+#### Run 3 — 2026-04-30 | chatbot: gpt-4o-mini | Ragas judge: gpt-4o-mini (max_tokens=8192)
+
+| Metric | Score | Notes |
+|---|---|---|
+| faithfulness | 0.8775 | Stable |
+| answer_relevancy | 0.9279 | Slight decrease from Run 2; now includes REG-05 and REG-20 which were previously blocked by a substring bug in the entertainment fast-check (`"sing" in "using"`) |
+| context_precision | 0.9318 | Large improvement — ground truths rewritten from actual document text |
+| context_recall | 0.7565 | **Now passing** — same cause: ground truths now match document phrasing |
+
+**Changes since Run 2:**
+- Ground truths for all 24 RAG tests rewritten verbatim from source documents
+- REG-05 and REG-20 now correctly score (were silently blocked before by `"sing"` substring match in entertainment fast-check)
+- Guard fast-check fixed to use whole-word regex matching (`\bsing\b`) instead of substring
+- Guard prompt simplified to 3 categories only (personal, small talk, entertainment) — general knowledge category removed to eliminate false positives on technical questions
+- Guard now runs on every message (previously skipped when `has_history=True`)
+- 4 behavioral tests added (BEH-01 to BEH-04): off-topic guard, broad path, clarification path, pass path
+- Result file: `tests/regression_results_20260430_122026.json`
 
 ---
 
