@@ -16,15 +16,44 @@ env/
 .env.local
 .env.*.local
 .dev-pids
+.pip-tmp/
 
 # Vector databases (large binary files — rebuilt locally from PDFs)
 backend/chroma_db/
 backend/faiss_db/
 chroma_db/
 
-# Uploaded PDFs and document registry (user data, rebuilt locally)
+# Uploaded documents and document registry (user data, rebuilt locally)
 backend/knowledge_base/*.pdf
+backend/knowledge_base/*.txt
+backend/knowledge_base/*.md
+backend/knowledge_base/*.log
+backend/knowledge_base/*.json
+backend/knowledge_base/*.xml
+backend/knowledge_base/*.docx
+backend/knowledge_base/*.rtf
+backend/knowledge_base/*.csv
+backend/knowledge_base/*.tsv
+backend/knowledge_base/*.xlsx
+backend/knowledge_base/*.xlsm
+backend/knowledge_base/*.pptx
+backend/knowledge_base/*.html
+backend/knowledge_base/*.htm
 knowledge_base/*.pdf
+knowledge_base/*.txt
+knowledge_base/*.md
+knowledge_base/*.log
+knowledge_base/*.json
+knowledge_base/*.xml
+knowledge_base/*.docx
+knowledge_base/*.rtf
+knowledge_base/*.csv
+knowledge_base/*.tsv
+knowledge_base/*.xlsx
+knowledge_base/*.xlsm
+knowledge_base/*.pptx
+knowledge_base/*.html
+knowledge_base/*.htm
 knowledge_base/documents.json
 
 # Node.js / Next.js

@@ -55,7 +55,12 @@ OPENAI_API_KEY=your-openai-api-key-here
 # Optional overrides
 CHUNK_SIZE=1000
 CHUNK_OVERLAP=200
+OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
 ```
+
+`text-embedding-ada-002` preserves compatibility with the existing local vector DB.
+For the recommended lower-cost embedding trial, set `OPENAI_EMBEDDING_MODEL=text-embedding-3-small`
+and re-run ingestion so the new model gets its own Chroma collection.
 
 ---
 
@@ -133,7 +138,11 @@ se/
 python ingest.py path/to/document.pdf   # ingest a single file
 ```
 
-Supported upload formats (via the UI or ingest script): `.pdf`, `.txt`, `.md`, `.json`, `.docx`, `.csv`, `.tsv`, `.html`
+Supported upload formats (via the UI or ingest script): `.pdf`, `.txt`, `.md`, `.log`, `.json`, `.xml`, `.docx`, `.rtf`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.pptx`, `.html`, `.htm`
+
+PDF ingestion uses `pdfplumber` when installed so table rows are preserved as
+text chunks. It falls back to standard PDF text extraction if `pdfplumber` is
+unavailable. Scanned image-only PDFs still require an OCR step before ingestion.
 
 ---
 

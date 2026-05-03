@@ -14,7 +14,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Document } from "@/lib/types";
 import { listDocuments, uploadDocument, deleteDocument } from "@/lib/documentApi";
 
-const ALLOWED_EXT = new Set([".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"]);
+const ALLOWED_EXT = new Set([
+  ".pdf", ".txt", ".md", ".log", ".json", ".xml", ".docx", ".rtf",
+  ".csv", ".tsv", ".xlsx", ".xlsm", ".pptx", ".html", ".htm",
+]);
+const ALLOWED_EXT_LABEL = "PDF, TXT, MD, LOG, JSON, XML, DOCX, RTF, CSV, TSV, XLSX, XLSM, PPTX, HTML.";
+const ACCEPT_ATTR = ".pdf,.txt,.md,.log,.json,.xml,.docx,.rtf,.csv,.tsv,.xlsx,.xlsm,.pptx,.html,.htm";
 
 interface DocumentSidebarProps {
   isOpen: boolean;
@@ -52,7 +57,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
 
   const handleUpload = async (file: File) => {
     if (!ALLOWED_EXT.has(getExt(file.name))) {
-      setError("Unsupported file type. Allowed: PDF, TXT, MD, JSON, DOCX, CSV, TSV, HTML.");
+      setError(`Unsupported file type. Allowed: ${ALLOWED_EXT_LABEL}`);
       return;
     }
     setUploadSource("files");
@@ -241,7 +246,7 @@ export default function DocumentSidebar({ isOpen, onClose }: DocumentSidebarProp
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.txt,.md,.json,.docx,.csv,.tsv,.html,.htm"
+            accept={ACCEPT_ATTR}
             multiple
             className="hidden"
             onChange={(e) => {

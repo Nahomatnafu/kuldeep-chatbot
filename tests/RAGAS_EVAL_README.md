@@ -213,7 +213,8 @@ Edit the `REGRESSION_TESTS` list in `regression_test.py`. Each entry:
 ## Implementation notes
 
 - **LLM used for evaluation:** `gpt-4o-mini` (chosen for its 4096-token output limit, which prevents truncation errors when scoring verbose answers)
-- **Embeddings:** `text-embedding-ada-002` via `LangchainEmbeddingsWrapper` (required by `AnswerRelevancy`)
+- **Current stored baseline embeddings:** `text-embedding-ada-002`
+- **Recommended next embedding trial:** `text-embedding-3-small`, which is newer and lower-cost than `text-embedding-ada-002`; set `OPENAI_EMBEDDING_MODEL=text-embedding-3-small`, re-run ingestion, then run the regression suite before promoting it as the new baseline
 - **Ragas version:** 0.4.x — import from `ragas.metrics` directly, **not** `ragas.metrics.collections` (different class hierarchy, not accepted by `evaluate()`)
 - **Context truncation:** Each retrieved chunk is capped at 800 characters before being passed to Ragas, preventing token limit issues on very long chunks
 - **REG-14 (hallucination guard):** Has no `ground_truth` — only faithfulness and answer_relevancy are scored. Tests that the system doesn't fabricate an answer for a topic not in any document.

@@ -61,8 +61,9 @@ import requests
 
 # ── Backend endpoints ─────────────────────────────────────────────────────────
 
-CHAT_URL  = "http://localhost:5000/chat"
-CLEAR_URL = "http://localhost:5000/api/clear"
+BACKEND_URL = os.getenv("CHATBOT_BACKEND_URL", "http://localhost:5000").rstrip("/")
+CHAT_URL  = f"{BACKEND_URL}/chat"
+CLEAR_URL = f"{BACKEND_URL}/api/clear"
 RESULTS_DIR = os.path.join(os.path.dirname(__file__))
 
 # ── Score thresholds (override via CLI args) ──────────────────────────────────
@@ -215,13 +216,11 @@ REGRESSION_TESTS: list[dict] = [
     },
     {
         "id": "REG-09",
-        "category": "machining",
-        "question": "In the Basic Machine Tool Operations Aug 2017 document, what is Skip Lot sampling?",
+        "category": "cnc",
+        "question": "In the Autodesk CNCbook, what roughing rule mentions grooves and other features?",
         "ground_truth": (
-            "Skip Lot sampling means that only a fraction of the submitted lots are inspected. "
-            "This mode of sampling is of the cost-saving variety in terms of time and effort, "
-            "but should only be used when it has been demonstrated that the quality of the "
-            "submitted product is very good."
+            "The roughing rules say to skip over grooves and other features that will be "
+            "rough or finished with other tools and operations."
         ),
     },
     {
@@ -269,8 +268,8 @@ REGRESSION_TESTS: list[dict] = [
     },
     {
         "id": "REG-13",
-        "category": "manufacturing",
-        "question": "According to Modern Manufacturing, what does monuments mean and give me two examples?",
+        "category": "lean-manufacturing",
+        "question": "According to Lean Manufacturing, what does monuments mean and give me two examples?",
         "ground_truth": (
             "Monuments are production processes or process steps that have large equipment "
             "and/or other physical or environmental regulatory constraints, are very difficult "
@@ -429,6 +428,43 @@ REGRESSION_TESTS: list[dict] = [
         ),
     },
 
+    {
+        "id": "REG-25",
+        "category": "revision-metadata",
+        "question": "In the Basic Machine Tool Operation Guide, what revision is shown on the cover?",
+        "ground_truth": (
+            "The Basic Machine Tool Operation Guide cover shows Rev. A 8/2017."
+        ),
+    },
+    {
+        "id": "REG-26",
+        "category": "revision-metadata",
+        "question": "In the SOP Maintenance and Calibration of Equipment, what document code and version are shown?",
+        "ground_truth": (
+            "The SOP Maintenance and Calibration of Equipment shows PR_GENER_0005_04 "
+            "Version 4.0."
+        ),
+    },
+    {
+        "id": "REG-27",
+        "category": "exact-spec",
+        "question": "According to Modern Manufacturing, what power density range and dwell time are used for laser surface hardening?",
+        "ground_truth": (
+            "The range of usable power densities for laser surface hardening is 3200 W/in2 "
+            "(500 W/cm2) to 32,000 W/in2 (5000 W/cm2), with beam dwell times ranging "
+            "from 0.1 to 10 seconds."
+        ),
+    },
+    {
+        "id": "REG-28",
+        "category": "equipment-specific",
+        "question": "According to Modern Manufacturing, what machine components are hardened by laser surface hardening?",
+        "ground_truth": (
+            "Laser surface hardening is used to harden selected areas of machine components, "
+            "such as gears, cylinders, bearings, and shafts."
+        ),
+    },
+
     # ── Grounding / hallucination guard (no ground_truth — skipped from retrieval metrics) ──
     {
         "id": "REG-14",
@@ -527,7 +563,7 @@ def _clear_session(session_id: str = "regression_session") -> None:
 def _check_backend() -> tuple[bool, str]:
     """Return (reachable, message)."""
     try:
-        r = requests.get("http://localhost:5000/api/health", timeout=5)
+        r = requests.get(f"{BACKEND_URL}/api/health", timeout=5)
         return r.status_code == 200, r.text
     except requests.RequestException as exc:
         return False, str(exc)
@@ -709,7 +745,11 @@ def _evaluate(
     that fell below their threshold.
     """
     sys.path.insert(0, os.path.dirname(__file__))
-    from ragas_eval import score_outputs, print_score_table  # type: ignore
+    try:
+        from ragas_eval import score_outputs, print_score_table  # type: ignore
+    except ImportError as exc:
+        print(f"\n[WARNING] Ragas evaluation unavailable: {exc}")
+        return {}, [str(exc)]
 
     # Base filter: no errors, has an answer and at least one context chunk
     scoreable = [

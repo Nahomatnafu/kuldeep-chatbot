@@ -21,6 +21,19 @@
 
 Six tests were failing in the baseline. All six were fixed without introducing regressions.
 
+### Current RAGAS Baseline (Run 3)
+
+Use this run for regression comparisons going forward.
+
+| Metric | Score | Threshold | Status |
+|--------|-------|-----------|--------|
+| Faithfulness | 0.8775 | 0.70 | PASS |
+| Answer relevancy | 0.9279 | 0.70 | PASS |
+| Context precision | 0.9318 | 0.60 | PASS |
+| Context recall | 0.7565 | 0.60 | PASS |
+
+Result file: `tests/regression_results_20260430_122026.json`
+
 ---
 
 ## Detailed Before/After Comparison

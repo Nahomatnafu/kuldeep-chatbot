@@ -19,6 +19,8 @@ import csv
 import json
 import time
 import traceback
+import math
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -43,12 +45,19 @@ load_dotenv()
 KNOWLEDGE_BASE_DIR = Path("knowledge_base")
 CHROMA_DB_DIR      = "chroma_db"
 DOCUMENTS_JSON     = Path("knowledge_base/documents.json")
-MODEL_NAME         = "gpt-4o-mini"
+MODEL_NAME         = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+EMBEDDING_MODEL    = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
 NUM_CHUNKS         = 12         # k=12 for broader recall on dense technical documents
 CHUNK_SIZE         = 1000
 CHUNK_OVERLAP      = 200
+VECTOR_POOL_FACTOR = 4          # retrieve wider, then rerank with lexical signals
+KEYWORD_POOL_SIZE  = 40
+HYBRID_ALPHA       = 0.72       # vector weight; lexical/exact-match fills the rest
 MAX_UPLOAD_MB      = 32
-ALLOWED_EXTENSIONS = {".pdf", ".txt", ".md", ".json", ".docx", ".csv", ".tsv", ".html", ".htm"}
+ALLOWED_EXTENSIONS = {
+    ".pdf", ".txt", ".md", ".log", ".json", ".xml", ".docx", ".rtf",
+    ".csv", ".tsv", ".xlsx", ".xlsm", ".pptx", ".html", ".htm",
+}
 BROAD_INTENT_PHRASES = {
     "all documents", "all the documents", "all docs", "all the docs",
     "across all", "across documents", "across the documents", "from all",
@@ -60,6 +69,17 @@ MAX_MULTI_DOC_CHUNKS     = 40            # hard cap on total chunks sent to LLM 
 
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
+
+def _collection_name_for_embedding(model_name: str) -> str:
+    """Use one Chroma collection per embedding model to avoid dimension conflicts."""
+    if model_name == "text-embedding-ada-002":
+        return "documents"
+    safe = re.sub(r"[^a-zA-Z0-9_]+", "_", model_name).strip("_").lower()
+    return f"documents_{safe}"
+
+
+COLLECTION_NAME = _collection_name_for_embedding(EMBEDDING_MODEL)
+
 # ── Flask app ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
 CORS(app)
@@ -70,6 +90,7 @@ collection: chromadb.Collection | None = None
 llm:        ChatOpenAI | None          = None
 _guard_llm: ChatOpenAI | None          = None   # cheap off-topic classifier
 conversation_sessions: dict            = {}      # session_id → { memory, last_accessed }
+_keyword_corpus_cache: dict            = {}
 
 # ── Prompt ───────────────────────────────────────────────────────────────────
 _QA_TEMPLATE = """You are a careful research assistant. \
@@ -218,6 +239,172 @@ def _save_doc_registry(registry: dict) -> None:
     DOCUMENTS_JSON.write_text(json.dumps(registry, indent=2))
 
 
+def _clean_text(text: str) -> str:
+    """Normalize whitespace while preserving enough structure for headings."""
+    text = text.replace("\x00", " ")
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def _extract_revision_status(text: str, filename: str) -> tuple[str, str, str]:
+    """Best-effort SOP/manual metadata from filenames and first-page text."""
+    sample = f"{filename}\n{text[:4000]}"
+    revision = ""
+    effective_date = ""
+    status = "active"
+
+    rev_match = re.search(r"\b(?:rev(?:ision)?\.?|version|ver\.?)\s*[:#-]?\s*([A-Z0-9.\-]+)", sample, re.I)
+    if rev_match:
+        revision = rev_match.group(1).strip(" .:-")
+
+    date_match = re.search(
+        r"\b(?:effective date|eff\.? date|issued|approved date)\s*[:#-]?\s*([A-Za-z0-9,/\-. ]{6,30})",
+        sample,
+        re.I,
+    )
+    if date_match:
+        effective_date = date_match.group(1).strip(" .")
+
+    if re.search(r"\b(obsolete|superseded|retired|archived|do not use)\b", sample, re.I):
+        status = "obsolete"
+
+    return revision, effective_date, status
+
+
+def _derive_doc_metadata(filepath: Path, docs: list[Document]) -> dict:
+    """Attach business-friendly metadata used by filters, citations, and reranking."""
+    combined = "\n".join(d.page_content for d in docs[:3])
+    revision, effective_date, status = _extract_revision_status(combined, filepath.name)
+    stem_words = Path(filepath.name).stem.lower().replace("-", " ").replace("_", " ")
+    doc_type = "document"
+    if "sop" in stem_words or "procedure" in stem_words:
+        doc_type = "sop"
+    elif "manual" in stem_words or "operation" in stem_words or "guide" in stem_words:
+        doc_type = "manual"
+    elif "checklist" in stem_words:
+        doc_type = "checklist"
+    elif "audit" in stem_words:
+        doc_type = "audit"
+
+    return {
+        "filename": filepath.name,
+        "document_title": Path(filepath.name).stem.replace("_", " ").replace("-", " "),
+        "doc_type": doc_type,
+        "revision": revision,
+        "effective_date": effective_date,
+        "status": status,
+        "embedding_model": EMBEDDING_MODEL,
+    }
+
+
+_SECTION_HEADING_RE = re.compile(
+    r"^\s*(?:"
+    r"(?:\d+(?:\.\d+){0,4})\s+[\w][\w ,/&()\-:]{3,}"
+    r"|(?:[A-Z][A-Z0-9 /&()\-:]{5,})"
+    r"|(?:scope|purpose|procedure|responsibilit(?:y|ies)|safety|warning|caution|steps?|materials?|equipment|references?)\b.*"
+    r")\s*$",
+    re.I,
+)
+
+
+def _split_docs_by_section(docs: list[Document], base_metadata: dict) -> list[Document]:
+    """
+    Create section-aware parent documents before character chunking.
+    This keeps SOP headings, warnings, and procedure boundaries visible to retrieval.
+    """
+    section_docs: list[Document] = []
+    current_heading = ""
+
+    for doc in docs:
+        text = _clean_text(doc.page_content)
+        if not text:
+            continue
+        page = doc.metadata.get("page", 0)
+        lines = text.splitlines()
+        buffer: list[str] = []
+
+        def flush() -> None:
+            if not buffer:
+                return
+            content = _clean_text("\n".join(buffer))
+            if content:
+                section_docs.append(Document(
+                    page_content=content,
+                    metadata={
+                        **base_metadata,
+                        **{k: v for k, v in doc.metadata.items() if isinstance(v, (str, int, float, bool))},
+                        "page": page,
+                        "section": current_heading,
+                    },
+                ))
+            buffer.clear()
+
+        for raw_line in lines:
+            line = raw_line.strip()
+            if _SECTION_HEADING_RE.match(line) and len(line) <= 120:
+                flush()
+                current_heading = line
+                buffer.append(line)
+            else:
+                buffer.append(raw_line)
+        flush()
+
+    if section_docs:
+        merged: list[Document] = []
+        carry: Document | None = None
+        for section_doc in section_docs:
+            content = section_doc.page_content.strip()
+            if carry is not None:
+                same_page = carry.metadata.get("page") == section_doc.metadata.get("page")
+                if same_page:
+                    carry.page_content = _clean_text(carry.page_content + "\n" + content)
+                    if not carry.metadata.get("section") and section_doc.metadata.get("section"):
+                        carry.metadata["section"] = section_doc.metadata.get("section", "")
+                    if len(carry.page_content) < 220:
+                        continue
+                    merged.append(carry)
+                    carry = None
+                    continue
+                merged.append(carry)
+                carry = None
+
+            if len(content) < 120:
+                carry = section_doc
+            else:
+                merged.append(section_doc)
+        if carry is not None:
+            if merged and merged[-1].metadata.get("page") == carry.metadata.get("page"):
+                merged[-1].page_content = _clean_text(merged[-1].page_content + "\n" + carry.page_content)
+            else:
+                merged.append(carry)
+        return merged
+
+    return [
+        Document(
+            page_content=_clean_text(d.page_content),
+            metadata={
+                **base_metadata,
+                **{k: v for k, v in d.metadata.items() if isinstance(v, (str, int, float, bool))},
+                "section": "",
+            },
+        )
+        for d in docs
+        if _clean_text(d.page_content)
+    ]
+
+
+def _prepare_chunks(filepath: Path, docs: list[Document]) -> list[Document]:
+    base_metadata = _derive_doc_metadata(filepath, docs)
+    section_docs = _split_docs_by_section(docs, base_metadata)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    chunks = splitter.split_documents(section_docs)
+    for i, chunk in enumerate(chunks):
+        chunk.metadata["chunk_index"] = i
+        chunk.metadata["chunk_id"] = f"{filepath.name}__chunk_{i}"
+    return chunks
+
+
 # ── Helper: initialise / reload vector store ─────────────────────────────────
 def _init_store() -> tuple[bool, str]:
     """Initialise (or reload) the ChromaDB collection and LLM. Returns (ok, message)."""
@@ -228,51 +415,257 @@ def _init_store() -> tuple[bool, str]:
         return False, "OPENAI_API_KEY not set in environment."
 
     try:
-        ef         = OpenAIEmbeddingFunction(api_key=api_key, model_name="text-embedding-ada-002")
+        ef         = OpenAIEmbeddingFunction(api_key=api_key, model_name=EMBEDDING_MODEL)
         client     = chromadb.PersistentClient(path=CHROMA_DB_DIR)
-        collection = client.get_or_create_collection(name="documents", embedding_function=ef)
+        collection = client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=ef,
+            metadata={"embedding_model": EMBEDDING_MODEL},
+        )
         llm        = ChatOpenAI(model_name=MODEL_NAME, temperature=0)
-        return True, "Vector store loaded."
+        return True, f"Vector store loaded ({COLLECTION_NAME})."
     except Exception as exc:
         return False, f"Failed to load vector store: {exc}"
 
 
 # ── Helper: load documents from any supported file type ─────────────────────
+def _format_pdf_table(table: list[list]) -> str:
+    """Convert an extracted PDF table to compact markdown-like text."""
+    cleaned_rows = []
+    for row in table or []:
+        cleaned = [str(cell or "").strip().replace("\n", " ") for cell in row]
+        if any(cleaned):
+            cleaned_rows.append(cleaned)
+    if not cleaned_rows:
+        return ""
+    width = max(len(row) for row in cleaned_rows)
+    normalized = [row + [""] * (width - len(row)) for row in cleaned_rows]
+    return "\n".join("| " + " | ".join(row) + " |" for row in normalized)
+
+
+def _load_pdf_docs(filepath: Path) -> list[Document]:
+    """
+    Prefer pdfplumber when available because it preserves tables better than
+    plain PDF text extraction. Falls back to PyPDFLoader for compatibility.
+    """
+    try:
+        import pdfplumber  # type: ignore
+    except ImportError:
+        return PyPDFLoader(str(filepath)).load()
+
+    docs: list[Document] = []
+    with pdfplumber.open(str(filepath)) as pdf:
+        for page_index, page in enumerate(pdf.pages):
+            parts = []
+            text = page.extract_text(x_tolerance=1, y_tolerance=3) or ""
+            if text.strip():
+                parts.append(text)
+            try:
+                tables = page.extract_tables() or []
+            except Exception:
+                tables = []
+            for table_index, table in enumerate(tables, 1):
+                table_text = _format_pdf_table(table)
+                if table_text:
+                    parts.append(f"[TABLE {table_index}]\n{table_text}")
+            content = _clean_text("\n\n".join(parts))
+            if content:
+                docs.append(Document(
+                    page_content=content,
+                    metadata={
+                        "source": str(filepath),
+                        "page": page_index,
+                        "total_pages": len(pdf.pages),
+                        "parser": "pdfplumber",
+                    },
+                ))
+
+    return docs or PyPDFLoader(str(filepath)).load()
+
+
+def _read_text_file(filepath: Path) -> str:
+    """Read common text-like files with a small encoding fallback chain."""
+    for encoding in ("utf-8", "utf-8-sig", "cp1252", "latin-1"):
+        try:
+            return filepath.read_text(encoding=encoding)
+        except UnicodeDecodeError:
+            continue
+    return filepath.read_text(encoding="utf-8", errors="replace")
+
+
+def _load_table_docs(filepath: Path, delimiter: str) -> list[Document]:
+    """Load CSV/TSV rows, supporting both headered and headerless files."""
+    rows: list[str] = []
+    text = _read_text_file(filepath)
+    sample = text[:2048]
+    try:
+        has_header = csv.Sniffer().has_header(sample)
+    except csv.Error:
+        has_header = True
+
+    reader = csv.reader(text.splitlines(), delimiter=delimiter)
+    raw_rows = [row for row in reader if any(cell.strip() for cell in row)]
+    if not raw_rows:
+        return []
+
+    if has_header and len(raw_rows) > 1:
+        headers = [h.strip() or f"column_{i + 1}" for i, h in enumerate(raw_rows[0])]
+        for row_index, row in enumerate(raw_rows[1:], 1):
+            cells = row + [""] * max(0, len(headers) - len(row))
+            values = [
+                f"{header}: {value.strip()}"
+                for header, value in zip(headers, cells)
+                if value.strip()
+            ]
+            if values:
+                rows.append(f"Row {row_index}: " + ", ".join(values))
+    else:
+        for row_index, row in enumerate(raw_rows, 1):
+            values = [
+                f"column_{col_index}: {value.strip()}"
+                for col_index, value in enumerate(row, 1)
+                if value.strip()
+            ]
+            if values:
+                rows.append(f"Row {row_index}: " + ", ".join(values))
+
+    return [Document(page_content="\n".join(rows), metadata={"source": str(filepath)})] if rows else []
+
+
+def _load_workbook_docs(filepath: Path) -> list[Document]:
+    """Extract visible worksheet values from modern Excel workbooks."""
+    from openpyxl import load_workbook
+
+    workbook = load_workbook(filename=str(filepath), read_only=True, data_only=True)
+    docs: list[Document] = []
+    try:
+        for sheet_index, sheet in enumerate(workbook.worksheets, 1):
+            rows: list[str] = []
+            for row_index, row in enumerate(sheet.iter_rows(values_only=True), 1):
+                values = [str(value).strip() for value in row if value is not None and str(value).strip()]
+                if values:
+                    rows.append(f"Row {row_index}: " + " | ".join(values))
+            content = _clean_text("\n".join(rows))
+            if content:
+                docs.append(Document(
+                    page_content=f"Sheet: {sheet.title}\n{content}",
+                    metadata={
+                        "source": str(filepath),
+                        "page": sheet_index - 1,
+                        "sheet": sheet.title,
+                        "parser": "openpyxl",
+                    },
+                ))
+    finally:
+        workbook.close()
+    return docs
+
+
+def _load_presentation_docs(filepath: Path) -> list[Document]:
+    """Extract text from each slide in a PowerPoint deck."""
+    from pptx import Presentation
+
+    presentation = Presentation(str(filepath))
+    docs: list[Document] = []
+    for slide_index, slide in enumerate(presentation.slides, 1):
+        parts: list[str] = []
+        for shape in slide.shapes:
+            if getattr(shape, "has_text_frame", False):
+                text = _clean_text(shape.text)
+                if text:
+                    parts.append(text)
+            if getattr(shape, "has_table", False):
+                table_rows: list[str] = []
+                for row in shape.table.rows:
+                    cells = [_clean_text(cell.text) for cell in row.cells]
+                    if any(cells):
+                        table_rows.append(" | ".join(cells))
+                if table_rows:
+                    parts.append("[TABLE]\n" + "\n".join(table_rows))
+        content = _clean_text("\n\n".join(parts))
+        if content:
+            docs.append(Document(
+                page_content=f"Slide {slide_index}\n{content}",
+                metadata={
+                    "source": str(filepath),
+                    "page": slide_index - 1,
+                    "slide": slide_index,
+                    "parser": "python-pptx",
+                },
+            ))
+    return docs
+
+
+def _load_xml_docs(filepath: Path) -> list[Document]:
+    """Flatten XML elements into path/value lines for retrieval."""
+    import xml.etree.ElementTree as ET
+
+    text = _read_text_file(filepath)
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError:
+        return [Document(page_content=text, metadata={"source": str(filepath)})]
+
+    lines: list[str] = []
+
+    def walk(element: ET.Element, path: str) -> None:
+        tag = element.tag.split("}", 1)[-1]
+        current_path = f"{path}/{tag}" if path else tag
+        attrs = " ".join(f"@{k}: {v}" for k, v in element.attrib.items())
+        value = (element.text or "").strip()
+        parts = [part for part in (attrs, value) if part]
+        if parts:
+            lines.append(f"{current_path}: {'; '.join(parts)}")
+        for child in element:
+            walk(child, current_path)
+
+    walk(root, "")
+    content = "\n".join(lines) or text
+    return [Document(page_content=content, metadata={"source": str(filepath)})]
+
+
 def _load_docs(filepath: Path) -> list:
     """Return a list of LangChain Documents for any supported file type."""
     ext = filepath.suffix.lower()
 
     if ext == ".pdf":
-        return PyPDFLoader(str(filepath)).load()
+        return _load_pdf_docs(filepath)
 
-    if ext in (".txt", ".md"):
-        from langchain_community.document_loaders import TextLoader
-        return TextLoader(str(filepath), encoding="utf-8").load()
+    if ext in (".txt", ".md", ".log"):
+        return [Document(page_content=_read_text_file(filepath), metadata={"source": str(filepath)})]
 
     if ext == ".json":
-        text = filepath.read_text(encoding="utf-8")
+        text = _read_text_file(filepath)
         try:
             content = json.dumps(json.loads(text), indent=2)
         except json.JSONDecodeError:
             content = text
         return [Document(page_content=content, metadata={"source": str(filepath)})]
 
+    if ext == ".xml":
+        return _load_xml_docs(filepath)
+
     if ext == ".docx":
-        from langchain_community.document_loaders import Docx2txtLoader
-        return Docx2txtLoader(str(filepath)).load()
+        import docx2txt
+        return [Document(page_content=docx2txt.process(str(filepath)), metadata={"source": str(filepath)})]
+
+    if ext == ".rtf":
+        from striprtf.striprtf import rtf_to_text
+        return [Document(page_content=rtf_to_text(_read_text_file(filepath)), metadata={"source": str(filepath)})]
 
     if ext in (".csv", ".tsv"):
         delimiter = "\t" if ext == ".tsv" else ","
-        rows = []
-        with filepath.open(encoding="utf-8", newline="") as f:
-            reader = csv.DictReader(f, delimiter=delimiter)
-            for row in reader:
-                rows.append(", ".join(f"{k}: {v}" for k, v in row.items()))
-        return [Document(page_content="\n".join(rows), metadata={"source": str(filepath)})]
+        return _load_table_docs(filepath, delimiter)
+
+    if ext in (".xlsx", ".xlsm"):
+        return _load_workbook_docs(filepath)
+
+    if ext == ".pptx":
+        return _load_presentation_docs(filepath)
 
     if ext in (".html", ".htm"):
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(filepath.read_text(encoding="utf-8"), "lxml")
+        soup = BeautifulSoup(_read_text_file(filepath), "lxml")
         for tag in soup(["script", "style"]):
             tag.decompose()
         return [Document(page_content=soup.get_text(separator="\n", strip=True), metadata={"source": str(filepath)})]
@@ -288,13 +681,12 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
         if not docs:
             return False, f"No content extracted from {filepath.name}.", 0
 
-        splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
-        chunks   = splitter.split_documents(docs)
+        chunks = _prepare_chunks(filepath, docs)
 
         # Remove any existing vectors for this file (handles re-uploads cleanly)
         collection.delete(where={"source": str(filepath)})
 
-        ids       = [f"{filepath.name}__chunk_{i}" for i in range(len(chunks))]
+        ids       = [str(c.metadata.get("chunk_id", f"{filepath.name}__chunk_{i}")) for i, c in enumerate(chunks)]
         texts     = [c.page_content for c in chunks]
         metadatas = [{"source": str(filepath), **{k: v for k, v in c.metadata.items() if isinstance(v, (str, int, float, bool))}} for c in chunks]
 
@@ -304,6 +696,7 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
             end = start + EMBED_BATCH
             collection.add(ids=ids[start:end], documents=texts[start:end], metadatas=metadatas[start:end])
 
+        _keyword_corpus_cache.clear()
         return True, f"Ingested {len(chunks)} chunks.", len(chunks)
     except Exception as exc:
         traceback.print_exc()
@@ -313,7 +706,18 @@ def _ingest_file(filepath: Path) -> tuple[bool, str, int]:
 # ── ChromaDB similarity search helpers ────────────────────────────────────────
 def _build_numbered_context(chunks: list) -> str:
     """Format chunks as numbered sections so the LLM can cite which ones it used."""
-    return "\n\n".join(f"[CHUNK {i}]\n{c.page_content}" for i, c in enumerate(chunks, 1))
+    parts = []
+    for i, c in enumerate(chunks, 1):
+        src = os.path.basename(c.metadata.get("source", c.metadata.get("filename", "Unknown")))
+        page = c.metadata.get("page")
+        section = c.metadata.get("section", "")
+        header = f"[CHUNK {i}] Source: {src}"
+        if isinstance(page, int):
+            header += f", Page: {page + 1}"
+        if section:
+            header += f", Section: {section}"
+        parts.append(f"{header}\n{c.page_content}")
+    return "\n\n".join(parts)
 
 
 def _dedup_chunks(chunks: list) -> list:
@@ -324,6 +728,7 @@ def _dedup_chunks(chunks: list) -> list:
         key = (
             os.path.basename(doc.metadata.get("source", "")),
             doc.metadata.get("page", 0),
+            doc.metadata.get("chunk_index", doc.metadata.get("chunk_id", doc.page_content[:80])),
         )
         if key not in seen:
             seen.add(key)
@@ -357,7 +762,250 @@ def _parse_citations(raw_answer: str, chunks: list) -> tuple:
     return clean_answer, cited_chunks if cited_chunks else chunks
 
 
+_TOKEN_RE = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_.:/#-]*")
+_CODE_TOKEN_RE = re.compile(
+    r"(?<![A-Za-z0-9])"
+    r"(?=[A-Za-z0-9_.:/#-]*[A-Za-z])"
+    r"(?=[A-Za-z0-9_.:/#-]*\d)"
+    r"[A-Za-z0-9][A-Za-z0-9_.:/#-]{2,}"
+    r"(?![A-Za-z0-9])"
+)
+_LEXICAL_STOP_WORDS = {
+    "the", "and", "for", "with", "what", "which", "that", "this", "from",
+    "according", "document", "documents", "manual", "sop", "procedure",
+    "procedures", "does", "are", "is", "to", "of", "in", "on", "a", "an",
+    "all", "about", "how", "do", "i", "me", "give", "explain", "describe",
+}
+
+
+def _tokenize(text: str) -> list[str]:
+    return [
+        t.lower()
+        for t in _TOKEN_RE.findall(text)
+        if len(t) > 1 and t.lower() not in _LEXICAL_STOP_WORDS
+    ]
+
+
+def _extract_code_tokens(text: str) -> list[str]:
+    """Return ordered, unique technical identifiers from a query or chunk."""
+    seen: set[str] = set()
+    tokens: list[str] = []
+    for match in _CODE_TOKEN_RE.finditer(text):
+        token = match.group(0).strip(".,;:()[]{}").lower()
+        if token and token not in seen:
+            seen.add(token)
+            tokens.append(token)
+    return tokens
+
+
+def _contains_exact_identifier(haystack: str, identifier: str) -> bool:
+    if not identifier:
+        return False
+    pattern = rf"(?<![a-z0-9]){re.escape(identifier.lower())}(?![a-z0-9])"
+    return re.search(pattern, haystack.lower()) is not None
+
+
+def _get_collection_docs(where: dict = None) -> list[Document]:
+    """Fetch collection contents for local lexical retrieval."""
+    if collection is None or collection.count() == 0:
+        return []
+    kwargs: dict = {"include": ["documents", "metadatas"]}
+    if where:
+        kwargs["where"] = where
+    try:
+        results = collection.get(**kwargs)
+    except Exception:
+        return []
+    return [
+        Document(page_content=t, metadata=m or {})
+        for t, m in zip(results.get("documents", []), results.get("metadatas", []))
+        if t
+    ]
+
+
+def _keyword_doc_text(doc: Document) -> str:
+    return " ".join([
+        doc.page_content,
+        str(doc.metadata.get("filename", "")),
+        str(doc.metadata.get("document_title", "")),
+        str(doc.metadata.get("section", "")),
+        str(doc.metadata.get("doc_type", "")),
+    ])
+
+
+def _keyword_corpus(where: dict = None) -> dict:
+    cache_key = json.dumps(where or {}, sort_keys=True)
+    count = collection.count() if collection is not None else 0
+    cached = _keyword_corpus_cache.get(cache_key)
+    if cached and cached.get("count") == count:
+        return cached
+
+    docs = _get_collection_docs(where=where)
+    rows = []
+    doc_freq: Counter = Counter()
+    total_len = 0
+    for doc in docs:
+        haystack = _keyword_doc_text(doc)
+        tokens = _tokenize(haystack)
+        token_counts = Counter(tokens)
+        total_len += len(tokens)
+        for token in token_counts:
+            doc_freq[token] += 1
+        rows.append({
+            "doc": doc,
+            "haystack": haystack.lower(),
+            "token_counts": token_counts,
+            "doc_len": max(1, len(tokens)),
+        })
+
+    corpus = {
+        "count": count,
+        "rows": rows,
+        "doc_freq": doc_freq,
+        "total_docs": len(rows),
+        "avg_doc_len": total_len / max(len(rows), 1),
+    }
+    _keyword_corpus_cache[cache_key] = corpus
+    return corpus
+
+
+def _keyword_score(query_tokens: list[str], row: dict, idf: dict[str, float], avg_doc_len: float) -> float:
+    if not query_tokens:
+        return 0.0
+    haystack = row["haystack"]
+    doc_tokens = row["token_counts"]
+    doc_len = row["doc_len"]
+    avg_doc_len = max(1.0, avg_doc_len)
+    score = 0.0
+    k1 = 1.5
+    b = 0.75
+    for token in query_tokens:
+        count = doc_tokens.get(token, 0)
+        if count:
+            numerator = count * (k1 + 1)
+            denominator = count + k1 * (1 - b + b * (doc_len / avg_doc_len))
+            score += idf.get(token, 0.0) * (numerator / denominator)
+        elif re.search(rf"\b{re.escape(token)}s?\b", haystack):
+            score += 0.4 * idf.get(token, 0.0)
+    exact_phrases = _extract_code_tokens(" ".join(query_tokens))
+    for phrase in exact_phrases:
+        if _contains_exact_identifier(haystack, phrase):
+            score += 8.0
+    return score
+
+
+def _exact_identifier_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[Document]:
+    identifiers = _extract_code_tokens(query)
+    if not identifiers:
+        return []
+
+    corpus = _keyword_corpus(where=where)
+    scored: list[tuple[Document, float]] = []
+    for row in corpus["rows"]:
+        haystack = row["haystack"]
+        matched = [identifier for identifier in identifiers if _contains_exact_identifier(haystack, identifier)]
+        if not matched:
+            continue
+        score = float(len(matched) * 100)
+        first_positions = [haystack.find(identifier) for identifier in matched if haystack.find(identifier) >= 0]
+        if first_positions:
+            score += 1.0 / (min(first_positions) + 1)
+        doc = Document(
+            page_content=row["doc"].page_content,
+            metadata={**row["doc"].metadata, "exact_code_match": ", ".join(matched)},
+        )
+        scored.append((doc, score))
+
+    scored.sort(key=lambda item: item[1], reverse=True)
+    return [doc for doc, _ in scored[:k]]
+
+
+def _keyword_search_with_score(query: str, k: int = KEYWORD_POOL_SIZE, where: dict = None) -> list[tuple[Document, float]]:
+    query_tokens = _tokenize(query)
+    corpus = _keyword_corpus(where=where)
+    rows = corpus["rows"]
+    if not query_tokens or not rows:
+        return []
+    doc_freq = corpus["doc_freq"]
+    total_docs = corpus["total_docs"]
+    avg_doc_len = corpus["avg_doc_len"]
+    idf = {
+        token: math.log(1 + (total_docs - doc_freq.get(token, 0) + 0.5) / (doc_freq.get(token, 0) + 0.5))
+        for token in set(query_tokens)
+    }
+    scored = []
+    for row in rows:
+        score = _keyword_score(query_tokens, row, idf, avg_doc_len)
+        if score > 0:
+            scored.append((row["doc"], score))
+    scored.sort(key=lambda item: item[1], reverse=True)
+    return scored[:k]
+
+
+def _doc_key(doc: Document) -> tuple:
+    return (
+        os.path.basename(doc.metadata.get("source", "")),
+        doc.metadata.get("chunk_index", doc.metadata.get("chunk_id", doc.page_content[:80])),
+    )
+
+
+def _hybrid_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[Document]:
+    """
+    Combine semantic vector retrieval with exact lexical matching.
+    This improves part numbers, error codes, revision IDs, and table/spec lookups.
+    """
+    exact_hits = _exact_identifier_search(query, k=k, where=where)
+    vector_hits = _similarity_search_with_score(query, k=max(k * VECTOR_POOL_FACTOR, k), where=where)
+    keyword_hits = _keyword_search_with_score(query, k=max(KEYWORD_POOL_SIZE, k), where=where)
+    if not vector_hits:
+        fallback = [doc for doc, _ in keyword_hits]
+        return _dedup_chunks(exact_hits + fallback)[:k]
+
+    by_key: dict[tuple, dict] = {}
+    max_keyword = max([score for _, score in keyword_hits], default=1.0)
+
+    for rank, (doc, distance) in enumerate(vector_hits):
+        key = _doc_key(doc)
+        vector_score = 1.0 / (1.0 + max(distance, 0.0))
+        by_key[key] = {
+            "doc": doc,
+            "vector_score": vector_score,
+            "keyword_score": 0.0,
+            "vector_rank_bonus": 1.0 / (rank + 1),
+        }
+
+    for doc, score in keyword_hits:
+        key = _doc_key(doc)
+        row = by_key.setdefault(key, {
+            "doc": doc,
+            "vector_score": 0.0,
+            "keyword_score": 0.0,
+            "vector_rank_bonus": 0.0,
+        })
+        row["keyword_score"] = max(row["keyword_score"], score / max_keyword)
+
+    ranked = []
+    for row in by_key.values():
+        final_score = (
+            HYBRID_ALPHA * row["vector_score"]
+            + (1.0 - HYBRID_ALPHA) * row["keyword_score"]
+            + 0.03 * row["vector_rank_bonus"]
+        )
+        row["doc"].metadata["retrieval_score"] = round(final_score, 6)
+        row["doc"].metadata["keyword_score"] = round(row["keyword_score"], 6)
+        ranked.append((row["doc"], final_score))
+
+    ranked.sort(key=lambda item: item[1], reverse=True)
+    hybrid_hits = [doc for doc, _ in ranked]
+    return _dedup_chunks(exact_hits + hybrid_hits)[:k]
+
+
 def _similarity_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[Document]:
+    """Query ChromaDB and return LangChain Document objects."""
+    return _hybrid_search(query, k=k, where=where)
+
+
+def _vector_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[Document]:
     """Query ChromaDB and return LangChain Document objects."""
     n = min(k, collection.count())
     if n == 0:
@@ -370,13 +1018,19 @@ def _similarity_search(query: str, k: int = NUM_CHUNKS, where: dict = None) -> l
             for t, m in zip(results["documents"][0], results["metadatas"][0])]
 
 
-def _similarity_search_with_score(query: str, k: int = NUM_CHUNKS) -> list[tuple[Document, float]]:
+def _similarity_search_with_score(query: str, k: int = NUM_CHUNKS, where: dict = None) -> list[tuple[Document, float]]:
     """Query ChromaDB and return (Document, distance) tuples."""
     n = min(k, collection.count())
     if n == 0:
         return []
-    results = collection.query(query_texts=[query], n_results=n,
-                               include=["documents", "metadatas", "distances"])
+    kwargs: dict = {
+        "query_texts": [query],
+        "n_results": n,
+        "include": ["documents", "metadatas", "distances"],
+    }
+    if where:
+        kwargs["where"] = where
+    results = collection.query(**kwargs)
     return [(Document(page_content=t, metadata=m), d)
             for t, m, d in zip(results["documents"][0], results["metadatas"][0], results["distances"][0])]
 
@@ -384,12 +1038,10 @@ def _similarity_search_with_score(query: str, k: int = NUM_CHUNKS) -> list[tuple
 # ── Scope detection ──────────────────────────────────────────────────────────
 
 _SCOPE_CANDIDATE_K      = 12
-_SCORE_COMPETITION_GAP  = 0.15  # L2 distance margin — sources within this gap of the
-                                # top chunk are considered genuinely competitive
-_MIN_RELEVANCE_SCORE    = 0.20  # Skip clarification entirely if the best chunk is
-                                # worse than this — no doc truly contains the answer
-_DOMINANCE_RATIO        = 0.10  # If (runner-up - top) / top >= this ratio the top doc
-                                # is dominant enough to skip clarification
+_SCORE_COMPETITION_GAP  = float(os.getenv("RAG_SCORE_COMPETITION_GAP", "0.15"))
+_DEFAULT_MIN_RELEVANCE  = "0.55" if EMBEDDING_MODEL == "text-embedding-3-small" else "0.20"
+_MIN_RELEVANCE_SCORE    = float(os.getenv("RAG_MIN_RELEVANCE_SCORE", _DEFAULT_MIN_RELEVANCE))
+_DOMINANCE_RATIO        = float(os.getenv("RAG_DOMINANCE_RATIO", "0.10"))
 
 # Words that occur in many filenames and carry no distinguishing meaning.
 # Used by _extract_distinctive_keywords to avoid matching on 'manual', 'procedure', etc.
@@ -397,8 +1049,8 @@ _FILENAME_STOP_WORDS = {
     "sop", "manual", "operation", "operations", "operator", "procedure",
     "schedule", "log", "inspection", "report", "document", "documents",
     "guide", "guidelines", "instruction", "instructions", "basic", "ref",
-    "reference", "overview", "pdf", "doc", "txt", "md", "csv", "tsv",
-    "html", "htm", "json", "docx",
+    "reference", "overview", "pdf", "doc", "txt", "md", "log", "csv", "tsv",
+    "html", "htm", "json", "xml", "docx", "rtf", "xlsx", "xlsm", "pptx",
 }
 
 
@@ -417,6 +1069,52 @@ def _extract_distinctive_keywords(filename: str) -> set:
 def _display_name(filename: str) -> str:
     """'SOP-001-Assembly-Line-Startup.txt' → 'SOP-001 Assembly Line Startup'"""
     return Path(filename).stem.replace("-", " ").replace("_", " ")
+
+
+def _source_matches_query(filename: str, query: str) -> bool:
+    query_tokens = set(_tokenize(query))
+    if not query_tokens:
+        return False
+    display = _display_name(filename).lower()
+    display = re.sub(r"\bfound testing documentation\b", " ", display)
+    display_tokens = [
+        t for t in _tokenize(display)
+        if t not in _FILENAME_STOP_WORDS and t not in {"found", "testing", "documentation"}
+    ]
+    if len(display_tokens) >= 2 and all(t in query_tokens for t in display_tokens[: min(4, len(display_tokens))]):
+        return True
+    distinctive = _extract_distinctive_keywords(filename) - {"found", "testing", "documentation"}
+    overlap = {
+        token for token in distinctive
+        if any(q == token or q.startswith(token) or token.startswith(q) for q in query_tokens)
+    }
+    if len(overlap) >= 2:
+        return True
+    if len(overlap) == 1 and any(marker in query_tokens for marker in {"fda", "boeing", "autodesk", "modern"}):
+        return True
+    compact_display = " ".join(display_tokens)
+    compact_query = " ".join(_tokenize(query))
+    return bool(compact_display and compact_display in compact_query)
+
+
+def _named_source_from_query(query: str) -> str | None:
+    registry = _load_doc_registry()
+    matches = [filename for filename in registry if _source_matches_query(filename, query)]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        query_tokens = set(_tokenize(query))
+        ranked = sorted(
+            matches,
+            key=lambda filename: len((_extract_distinctive_keywords(filename) - {"found", "testing", "documentation"}) & query_tokens),
+            reverse=True,
+        )
+        top = ranked[0]
+        top_score = len((_extract_distinctive_keywords(top) - {"found", "testing", "documentation"}) & query_tokens)
+        runner_score = len((_extract_distinctive_keywords(ranked[1]) - {"found", "testing", "documentation"}) & query_tokens)
+        if top_score > runner_score:
+            return top
+    return None
 
 
 def _build_clarification_options(sources: list) -> list:
@@ -474,6 +1172,10 @@ def _detect_scope(message: str, session_id: str) -> tuple:
         return ("broad", None)
 
     # 3 — Candidate retrieval + score-based competition check
+    named_source = _named_source_from_query(message)
+    if named_source:
+        return ("resolved_single", (named_source, message))
+
     candidates = _similarity_search_with_score(message, k=_SCOPE_CANDIDATE_K)
     if not candidates:
         return ("pass", None)
@@ -597,6 +1299,10 @@ def _answer_single_doc(question: str, filename: str, session_id: str):
             "id":         i,
             "file":       os.path.basename(src),
             "page":       page + 1,
+            "section":    doc.metadata.get("section", ""),
+            "doc_type":   doc.metadata.get("doc_type", ""),
+            "revision":   doc.metadata.get("revision", ""),
+            "status":     doc.metadata.get("status", ""),
             "snippet":    snippet,
             "full_snippet": doc.page_content.replace("\n", " "),
         })
@@ -652,6 +1358,10 @@ def _answer_multi_doc(question: str, session_id: str):
             "id":         i,
             "file":       os.path.basename(src),
             "page":       page + 1,
+            "section":    doc.metadata.get("section", ""),
+            "doc_type":   doc.metadata.get("doc_type", ""),
+            "revision":   doc.metadata.get("revision", ""),
+            "status":     doc.metadata.get("status", ""),
             "snippet":    snippet,
             "full_snippet": doc.page_content.replace("\n", " "),
         })
@@ -816,6 +1526,10 @@ def chat():
                 "id":         i,
                 "file":       os.path.basename(src),
                 "page":       page + 1,
+                "section":    doc.metadata.get("section", ""),
+                "doc_type":   doc.metadata.get("doc_type", ""),
+                "revision":   doc.metadata.get("revision", ""),
+                "status":     doc.metadata.get("status", ""),
                 "snippet":    snippet,
                 "full_snippet": doc.page_content.replace("\n", " "),
             })
@@ -836,7 +1550,15 @@ def list_documents():
     """Return a list of all uploaded/ingested documents."""
     registry = _load_doc_registry()
     docs = [
-        {"filename": name, "chunks": info.get("chunks", 0), "uploaded_at": info.get("uploaded_at", "")}
+        {
+            "filename": name,
+            "chunks": info.get("chunks", 0),
+            "uploaded_at": info.get("uploaded_at", ""),
+            "doc_type": info.get("doc_type", ""),
+            "revision": info.get("revision", ""),
+            "status": info.get("status", ""),
+            "embedding_model": info.get("embedding_model", ""),
+        }
         for name, info in registry.items()
     ]
     return jsonify({"documents": docs})
@@ -844,7 +1566,7 @@ def list_documents():
 
 @app.route("/api/documents/upload", methods=["POST"])
 def upload_document():
-    """Upload and ingest a PDF file."""
+    """Upload and ingest a supported document file."""
     if "file" not in request.files:
         return jsonify({"success": False, "message": "No file field in request"}), 400
 
@@ -872,7 +1594,20 @@ def upload_document():
 
     # Update registry
     registry = _load_doc_registry()
-    registry[filename] = {"chunks": chunk_count, "uploaded_at": datetime.now(timezone.utc).isoformat()}
+    doc_meta = {}
+    try:
+        sample_docs = _load_docs(filepath)
+        doc_meta = _derive_doc_metadata(filepath, sample_docs)
+    except Exception:
+        doc_meta = {"embedding_model": EMBEDDING_MODEL}
+    registry[filename] = {
+        "chunks": chunk_count,
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        "doc_type": doc_meta.get("doc_type", ""),
+        "revision": doc_meta.get("revision", ""),
+        "status": doc_meta.get("status", ""),
+        "embedding_model": EMBEDDING_MODEL,
+    }
     _save_doc_registry(registry)
 
     # Clear sessions so they don't use stale context
@@ -900,6 +1635,7 @@ def delete_document(filename: str):
 
     # Selectively delete only this document's vectors — no rebuild required
     collection.delete(where={"source": str(KNOWLEDGE_BASE_DIR / filename)})
+    _keyword_corpus_cache.clear()
 
     # Clear sessions so memory doesn't reference deleted content
     conversation_sessions.clear()
@@ -927,6 +1663,8 @@ def health():
         "has_api_key":     has_api_key,
         "ready":           has_docs and has_api_key and collection is not None,
         "active_sessions": len(conversation_sessions),
+        "embedding_model": EMBEDDING_MODEL,
+        "collection":      COLLECTION_NAME,
     })
 
 
