@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount repo-root knowledge_base and chroma_db into the container
+      # so uploaded documents and vectors persist across container restarts
+      - ./knowledge_base:/app/knowledge_base
+      - ./chroma_db:/app/chroma_db
+    env_file:
+      - ./backend/.env    # loads OPENAI_API_KEY
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # In Docker, Next.js server-side routes reach Flask via the internal
+      # Docker network using the service name as hostname — not localhost
+      - FLASK_URL=http://backend:5000
+    depends_on:
+      - backend
