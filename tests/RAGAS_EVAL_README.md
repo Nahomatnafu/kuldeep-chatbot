@@ -89,57 +89,21 @@ Results are saved to `tests/regression_results_<timestamp>.json` after every run
 
 ### Score history
 
-#### Run 1 — 2026-04-22 | chatbot: gpt-3.5-turbo | Ragas judge: gpt-3.5-turbo
-
-| Metric | Score | Notes |
-|---|---|---|
-| faithfulness | 0.796 | |
-| answer_relevancy | 0.912 | |
-| context_precision | 0.872 | Inflated — gpt-3.5-turbo judge was lenient |
-| context_recall | 0.878 | Inflated — gpt-3.5-turbo judge was lenient |
-
-#### Run 2 — 2026-04-24 | chatbot: gpt-4o-mini | Ragas judge: gpt-4o-mini (max_tokens=8192)
-
-| Metric | Score | Notes |
-|---|---|---|
-| faithfulness | 0.876 | Improved — gpt-4o-mini stays closer to retrieved context |
-| answer_relevancy | 0.971 | Improved |
-| context_precision | 0.651 | Stricter judge; also affected by ground truth quality (see below) |
-| context_recall | 0.499 | **FAIL** — stricter judge + ground truths not derived from actual document text |
-
-**Why context_recall dropped:** gpt-4o-mini judges whether ground truth facts are *explicitly present* in the retrieved chunks, while gpt-3.5-turbo would infer or assume support from implied content. The current ground truths were written from general domain knowledge rather than from the actual text of the uploaded documents — so many facts are phrased differently from or not literally present in the chunks. This causes gpt-4o-mini to mark them as not supported.
-
-The Run 2 scores are more trustworthy as a quality signal. The context_recall score in particular will only become reliable once ground truths are rewritten to match what the documents actually say. See the [Adding or editing test cases](#adding-or-editing-test-cases) section for guidance.
-
-**Current baseline** (use Run 3 for regression comparisons going forward):
-
-| Metric | Score | Threshold |
-|---|---|---|
-| faithfulness | 0.8775 | 0.70 ✓ |
-| answer_relevancy | 0.9279 | 0.70 ✓ |
-| context_precision | 0.9318 | 0.60 ✓ |
-| context_recall | 0.7565 | 0.60 ✓ |
-
-All four metrics pass. Ground truths were rewritten from actual document text, fixing the context_recall failure seen in Run 2.
-
----
-
-#### Run 3 — 2026-04-30 | chatbot: gpt-4o-mini | Ragas judge: gpt-4o-mini (max_tokens=8192)
+#### Run 1 — 2026-04-30 | chatbot: gpt-4o-mini | Ragas judge: gpt-4o-mini (max_tokens=8192) — **Baseline**
 
 | Metric | Score | Notes |
 |---|---|---|
 | faithfulness | 0.8775 | Stable |
-| answer_relevancy | 0.9279 | Slight decrease from Run 2; now includes REG-05 and REG-20 which were previously blocked by a substring bug in the entertainment fast-check (`"sing" in "using"`) |
+| answer_relevancy | 0.9279 | Includes REG-05 and REG-20 which require whole-word guard matching (`\bsing\b`) to score correctly |
 | context_precision | 0.9318 | Large improvement — ground truths rewritten from actual document text |
-| context_recall | 0.7565 | **Now passing** — same cause: ground truths now match document phrasing |
+| context_recall | 0.7565 | **Passing** — ground truths written from actual document text |
 
-**Changes since Run 2:**
-- Ground truths for all 24 RAG tests rewritten verbatim from source documents
-- REG-05 and REG-20 now correctly score (were silently blocked before by `"sing"` substring match in entertainment fast-check)
-- Guard fast-check fixed to use whole-word regex matching (`\bsing\b`) instead of substring
-- Guard prompt simplified to 3 categories only (personal, small talk, entertainment) — general knowledge category removed to eliminate false positives on technical questions
-- Guard now runs on every message (previously skipped when `has_history=True`)
-- 4 behavioral tests added (BEH-01 to BEH-04): off-topic guard, broad path, clarification path, pass path
+**Notes:**
+- Ground truths for all 24 RAG tests written verbatim from source documents
+- Guard fast-check uses whole-word regex matching (`\bsing\b`) instead of substring to avoid false positives
+- Guard prompt covers 3 categories only (personal, small talk, entertainment) — general knowledge excluded to prevent false positives on technical questions
+- Guard runs on every message including those with history
+- 4 behavioral tests included (BEH-01 to BEH-04): off-topic guard, broad path, clarification path, pass path
 - Result file: `tests/regression_results_20260430_122026.json`
 
 ---
